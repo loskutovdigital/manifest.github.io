@@ -204,15 +204,12 @@ $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
-  // Пропорции (от 0 до 1 относительно ширины W и высоты H листа)
   layout: {
-    fontSize:      0.0135, // Размер основного текста (~8 pt на A4)
-    labelSize:     0.0122, // Размер мелкой подписи Period
+    fontSize:      0.0135, // Размер основного текста
     lineHeight:    0.0195, // Межстрочный интервал в Description
     maxChars:      56,     // Перенос длинных строк до колонки Type
-    periodLabel:   { rightX: 0.934, y: 0.926 },
-    periodValue:   { rightX: 0.934, y: 0.908 },
-    rowTopY:       0.776,  // Верхняя строка таблицы под заголовками
+    periodValue:   { rightX: 0.934, y: 0.843 }, // Даты периода под словом Period
+    rowTopY:       0.663,  // Первая строка таблицы под оранжевой шапкой
     dateX:         0.084,  // Колонка Date
     descX:         0.178,  // Колонка Name / Description / Notification
     typeX:         0.618,  // Колонка Type
@@ -297,26 +294,16 @@ async function generateStatementPdf(t) {
     const textColor   = rgb(0.1, 0.1, 0.1);
 
     const fontSize   = W * L.fontSize;
-    const labelSize  = W * L.labelSize;
     const lineHeight = W * L.lineHeight;
     const rowY       = oy + H * L.rowTopY;
 
-    // 1. Блок Period справа сверху (под Account number)
-    const pLabelW = fontRegular.widthOfTextAtSize('Period', labelSize);
-    page.drawText('Period', {
-      x: ox + W * L.periodLabel.rightX - pLabelW,
-      y: oy + H * L.periodLabel.y,
-      size: labelSize,
-      font: fontRegular,
-      color: textColor
-    });
-
-    const pValW = fontBold.widthOfTextAtSize(periodStr, fontSize);
+    // 1. Даты периода справа сверху (под словом Period на бланке)
+    const pValW = fontRegular.widthOfTextAtSize(periodStr, fontSize);
     page.drawText(periodStr, {
       x: ox + W * L.periodValue.rightX - pValW,
       y: oy + H * L.periodValue.y,
       size: fontSize,
-      font: fontBold,
+      font: fontRegular,
       color: textColor
     });
 
