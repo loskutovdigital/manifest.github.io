@@ -54,6 +54,7 @@ nav{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 <div id="app"><header><button class="ib" id="back" data-a="back" aria-label="Back" style="visibility:hidden">‹</button><b></b><button class="ib" id="sb" data-a="srch">🔍</button></header><main id="scr"></main>
 <nav><button data-a="tab" data-v="ov"><span>👛</span>Overview</button><button data-a="tab" data-v="in"><span>💡</span>Insight</button><button data-a="tab" data-v="iv"><span>📈</span>Investments</button><button data-a="tab" data-v="pr"><span>🧺</span>Products</button><button data-a="tab" data-v="sv"><span>👤</span>Service</button></nav>
 <div class="sh"><div class="bd" data-a="cl"></div><div class="pn"></div></div><div id="ts"></div></div>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),f2=n=>Math.abs(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2}),
 E=n=>(n<0?'−':'+')+f2(n)+' €',B=n=>(n<0?'−':'')+f2(n)+' €',
@@ -201,13 +202,157 @@ function render(keep){const scr=$('#scr'),y=scr.scrollTop,t=currentTx(),detail=!
 function updateHeader(){const t=currentTx();if(t)$('header b').textContent=$('#scr').scrollTop>145?t.n:''}
 $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 /* ---------- actions ---------- */
+/* ---------- PDF statement generator ---------- */
+const PDF_CONFIG = {
+  templateUrl: './statement_template.pdf',
+  debugGrid: false, // Поставь true на один запуск, если нужно увидеть сетку координат и поправить отступы
+  coords: {
+    period: { x: 355, y: 722, wipeW: 190, wipeH: 16 },
+    date:   { x: 42,  y: 548, wipeW: 65,  wipeH: 16 },
+    desc:   { x: 115, y: 548, wipeW: 270, wipeH: 75, lineHeight: 12, maxChars: 50 },
+    type:   { x: 395, y: 548, wipeW: 95,  wipeH: 16 },
+    amount: { rightX: 553, y: 548, wipeW: 65, wipeH: 16 }
+  }
+};
+
+function formatPdfDate(dateStr, fallbackDateObj) {
+  if (dateStr) {
+    const num = dateStr.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+    if (num) return `${num[1].padStart(2, '0')}/${num[2].padStart(2, '0')}/${num[3]}`;
+    const months = {
+      january: '01', february: '02', march: '03', april: '04',
+      may: '05', june: '06', july: '07', august: '08',
+      september: '09', october: '10', november: '11', december: '12'
+    };
+    const parts = dateStr.trim().split(/\s+/);
+    if (parts.length === 3 && months[parts[1].toLowerCase()]) {
+      return `${parts[0].padStart(2, '0')}/${months[parts[1].toLowerCase()]}/${parts[2]}`;
+    }
+  }
+  if (fallbackDateObj instanceof Date) {
+    const dd = String(fallbackDateObj.getDate()).padStart(2, '0');
+    const mm = String(fallbackDateObj.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${fallbackDateObj.getFullYear()}`;
+  }
+  return dateStr || '';
+}
+
+function wrapPdfLines(text, maxChars) {
+  if (!text) return [];
+  const lines = [];
+  for (let i = 0; i < text.length; i += maxChars) {
+    lines.push(text.slice(i, i + maxChars));
+  }
+  return lines;
+}
+
+async function generateStatementPdf(t) {
+  if (!t) return;
+  try {
+    if (typeof PDFLib === 'undefined') {
+      return toast('PDF library not loaded');
+    }
+    toast('Generating PDF...');
+
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const m = demoMeta(t);
+    const [to, from] = parties(t);
+    const counterparty = t.a < 0 ? to : from;
+
+    const txDateStr   = formatPdfDate(m.transactionDate, t.d);
+    const procDateStr = formatPdfDate(m.processingDate || m.transactionDate, t.d);
+    const periodStr   = `${txDateStr} till ${procDateStr}`;
+    const methodStr   = m.method || '';
+    const amountStr   = (t.a < 0 ? '-' : '') + Math.abs(t.a).toFixed(2);
+    const rawDesc     = (t.meta?.description !== undefined || t.note !== '')
+      ? t.note
+      : ('Secured ' + t.c.toLowerCase() + ' transaction');
+
+    // Собираем блок Description (строго без Value Date)
+    const descLines = [];
+    const titleName = (counterparty[0] || t.n || '').trim();
+    if (titleName)       descLines.push(...wrapPdfLines(titleName, PDF_CONFIG.coords.desc.maxChars));
+    if (counterparty[1]) descLines.push(...wrapPdfLines(`IBAN: ${counterparty[1]}`, PDF_CONFIG.coords.desc.maxChars));
+    if (m.ref)           descLines.push(...wrapPdfLines(`Reference: ${m.ref}`, PDF_CONFIG.coords.desc.maxChars));
+    if (rawDesc)         descLines.push(...wrapPdfLines(`Description: ${rawDesc}`, PDF_CONFIG.coords.desc.maxChars));
+
+    const existingPdfBytes = await fetch(PDF_CONFIG.templateUrl).then(res => {
+      if (!res.ok) throw new Error('Template PDF not found');
+      return res.arrayBuffer();
+    });
+
+    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    const page = pdfDoc.getPages()[0];
+    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const textColor   = rgb(0.12, 0.12, 0.12);
+    const white       = rgb(1, 1, 1);
+
+    const { period, date, desc, type, amount } = PDF_CONFIG.coords;
+
+    // Закрываем старые цифры шаблона белыми прямоугольниками
+    page.drawRectangle({ x: period.x - 2, y: period.y - 4, width: period.wipeW, height: period.wipeH, color: white });
+    page.drawRectangle({ x: date.x - 2,   y: date.y - 4,   width: date.wipeW,   height: date.wipeH,   color: white });
+    page.drawRectangle({ x: desc.x - 2,   y: desc.y - desc.wipeH + 12, width: desc.wipeW, height: desc.wipeH, color: white });
+    page.drawRectangle({ x: type.x - 2,   y: type.y - 4,   width: type.wipeW,   height: type.wipeH,   color: white });
+    page.drawRectangle({ x: amount.rightX - amount.wipeW, y: amount.y - 4, width: amount.wipeW + 4, height: amount.wipeH, color: white });
+
+    // Впечатываем новые данные
+    page.drawText(periodStr, { x: period.x, y: period.y, size: 8.5, font: fontRegular, color: textColor });
+    page.drawText(txDateStr, { x: date.x,   y: date.y,   size: 8.5, font: fontRegular, color: textColor });
+    page.drawText(methodStr, { x: type.x,   y: type.y,   size: 8.5, font: fontRegular, color: textColor });
+
+    descLines.forEach((line, idx) => {
+      page.drawText(line, {
+        x: desc.x,
+        y: desc.y - idx * desc.lineHeight,
+        size: 8.5,
+        font: idx === 0 ? fontBold : fontRegular,
+        color: textColor
+      });
+    });
+
+    const amountWidth = fontRegular.widthOfTextAtSize(amountStr, 8.5);
+    page.drawText(amountStr, {
+      x: amount.rightX - amountWidth,
+      y: amount.y,
+      size: 8.5,
+      font: fontRegular,
+      color: textColor
+    });
+
+    if (PDF_CONFIG.debugGrid) {
+      for (let gx = 0; gx < 600; gx += 50) {
+        page.drawText(String(gx), { x: gx + 2, y: 10, size: 6, font: fontRegular, color: rgb(1, 0, 0) });
+      }
+      for (let gy = 0; gy < 850; gy += 50) {
+        page.drawText(String(gy), { x: 5, y: gy + 2, size: 6, font: fontRegular, color: rgb(1, 0, 0) });
+      }
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `${m.ref || 'ING-statement'}.pdf`;
+    a.target = '_blank';
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+    toast('Statement PDF generated');
+  } catch (err) {
+    console.error(err);
+    toast('PDF error: ' + err.message);
+  }
+}
 const A={cl,tab:v=>{S.tab=v;S.detail=null;S.similar=null;cl();render()},srch:()=>{S.sr=!S.sr;S.q='';render(1)},flt:v=>{S.flt=v;render(1)},nocat:()=>{S.cat=null;render(1)},cat:v=>{S.cat=v;S.flt='all';S.tab='ov';S.detail=null;S.similar=null;render()},
 tx:v=>{if(S.detail===null&&S.similar===null)S.listY=$('#scr').scrollTop;S.detail=Number(v);S.tab='ov';render()},
 back:()=>{if(S.detail!==null){S.detail=null;render();if(S.similar===null)$('#scr').scrollTop=S.listY}else if(S.similar!==null){S.detail=S.similar;S.similar=null;render()}},
 txcopy:async k=>{const t=currentTx();if(!t)return;const p=parties(t),v=k==='description'?txDescription(t):(k==='to'?p[0]:p[1]).join('\n');try{await navigator.clipboard.writeText(v);toast('Copied data')}catch(e){const el=document.createElement('textarea');el.value=v;$('.pn').append(el);el.style.position='fixed';el.style.opacity='0';document.body.append(el);el.select();try{if(!document.execCommand('copy'))throw Error();toast('Copied data')}catch(e){op('<h3>Copy data</h3><textarea style="width:100%;height:120px">'+esc(v)+'</textarea>')}finally{el.remove()}}},
 txsplit:()=>{const t=currentTx();op(`<h3>Split the amount</h3><p class="mu">${B(Math.abs(t.a))} · simulation only</p><label>Number of people (including you)</label><input id="splitN" type="number" min="2" max="20" value="2" data-i="split"><p id="splitR">${B(Math.abs(t.a)/2)} per person</p><button class="btn" data-a="txsplitdone">Simulate split request</button>`)},
 txsplitdone:()=>{const n=Number($('#splitN').value);if(!Number.isInteger(n)||n<2||n>20)return toast('Enter 2–20 people');cl();toast('Split request Secured')},
-txdownload:()=>{const t=currentTx(),m=demoMeta(t),[to,from]=parties(t);const txt=['All data is Secured.','Amount: '+E(t.a),'Method: '+m.method,'To: '+to.join(' / '),'From: '+from.join(' / '),'Date: '+txDateText(m),'Processing date: '+m.processingDate,'Location: '+m.location,txDescription(t)].join('\n');const url=URL.createObjectURL(new Blob([txt],{type:'text/plain'})),a=document.createElement('a');a.href=url;a.download=m.ref+'-statement.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);toast('Details exported')},
+txdownload:()=>generateStatementPdf(currentTx()),
 txtag:()=>{const t=currentTx();op(`<h3>Transaction tag</h3><input id="tagValue" placeholder="e.g. Travel, Work" maxlength="40" value="${esc(t.tag||'')}"><button class="btn" data-a="txtagsave">Save tag</button><button class="btn g" data-a="txtagclear">Remove tag</button>`)},
 txtagsave:()=>{currentTx().tag=$('#tagValue').value.trim();cl();render(1)},txtagclear:()=>{currentTx().tag='';cl();render(1)},
 txcategory:()=>{const t=currentTx();op(`<h3>Category and note</h3><select id="txCat">${Object.keys(CC).map(c=>`<option${c===t.c?' selected':''}>${c}</option>`).join('')}</select><input id="txNote" placeholder="Add a note" value="${esc(t.note)}"><button class="btn" data-a="txcatsave">Save</button>`)},
