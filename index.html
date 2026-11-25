@@ -109,7 +109,19 @@ R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport',{
     ref:'10-11-2026 16:44 7180735293467586',             // тестовый референс
     description:'GTT3SPGP4S59QM3JEX10\n7180735293467586\ne8880b032-733b-40ca-b51d-d8fcc16fd1d',     // текст описания
     tag:'Allianz'                      // начальный тег
-}],[10,'ParcelPost','📮',-15.89,'Shopping'],[9,'Digital Studio LLC','💼',1577.8,'Income'],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Client payment','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
+}],[10,'ParcelPost','📮',-15.89,'Shopping'],[9,'Loskutov Digital Solutions','💼',1577.8,'Income',{
+    // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
+    toName:'Loskutov Digital Solutions',       // получатель
+    toAccount:'NL06 INGB 0119 2424 00',       // тестовый счёт получателя
+    time:'20:09',                        // время операции
+    transactionDate:'09 November 2026', // дата в деталях (дата списка — первый элемент массива)
+    processingDate:'09 November 2026',  // дата обработки
+    method:'Online Banking',            // способ оплаты
+    location:'Netherlands',  // местоположение
+    ref:'09/11/2026 20:09:03',             // тестовый референс
+    description:'personal funds',     // текст описания
+    tag:'ZZP income'                      // начальный тег
+}],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Client payment','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
 let S,T,id=0;
 const hist=p=>{let h=[],x=p*.94;for(let i=0;i<30;i++){x*=1+(Math.random()-.46)*.02;h.push(+x.toFixed(2))}h[29]=p;return h};
 function init(){id=0;T=R.map(r=>({id:id++,d:new Date(2026,10,r[0]),n:r[1],i:r[2],a:r[3],c:r[4],note:r[5]?.description??'',tag:r[5]?.tag,meta:{...r[5]}}));
