@@ -206,11 +206,11 @@ $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
   layout: {
-    fontSize:      0.0135, // Размер основного текста
-    lineHeight:    0.0195, // Межстрочный интервал в Description
-    maxChars:      56,     // Перенос длинных строк до колонки Type
-    periodValue:   { rightX: 0.934, y: 0.843 }, // Даты периода под словом Period
-    rowTopY:       0.663,  // Первая строка таблицы под оранжевой шапкой
+    fontSize:      0.0168, // Увеличенный размер шрифта для всех данных
+    lineHeight:    0.0225, // Межстрочный интервал в Description
+    maxChars:      45,     // Перенос длинных строк до колонки Type
+    periodValue:   { rightX: 0.934, y: 0.844 }, // Даты периода под словом Period
+    rowTopY:       0.666,  // Первая строка таблицы под оранжевой шапкой
     dateX:         0.084,  // Колонка Date
     descX:         0.178,  // Колонка Name / Description / Notification
     typeX:         0.618,  // Колонка Type
@@ -279,6 +279,7 @@ async function generateStatementPdf(t) {
     if (counterparty[1]) descLines.push(...wrapPdfLines(`IBAN: ${counterparty[1]}`, L.maxChars));
     if (m.ref)           descLines.push(...wrapPdfLines(`Reference: ${m.ref}`, L.maxChars));
     if (rawDesc)         descLines.push(...wrapPdfLines(`Description: ${rawDesc}`, L.maxChars));
+    if (procDateStr)     descLines.push(...wrapPdfLines(`Value date: ${procDateStr}`, L.maxChars));
 
     const existingPdfBytes = await fetch(PDF_CONFIG.templateUrl).then(res => {
       if (!res.ok) throw new Error('Template PDF not found');
@@ -309,12 +310,12 @@ async function generateStatementPdf(t) {
     const rowY       = oy + H * L.rowTopY;
 
     // 1. Даты периода справа сверху (под словом Period на бланке)
-    const pValW = fontRegular.widthOfTextAtSize(periodStr, fontSize);
+    const pValW = fontBold.widthOfTextAtSize(periodStr, fontSize);
     page.drawText(periodStr, {
       x: ox + W * L.periodValue.rightX - pValW,
       y: oy + H * L.periodValue.y,
       size: fontSize,
-      font: fontRegular,
+      font: fontBold,
       color: textColor
     });
 
