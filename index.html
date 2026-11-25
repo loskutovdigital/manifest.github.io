@@ -85,7 +85,33 @@ R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport',{
 [15,'FuelUp','⛽',-25.54,'Fuel'],[15,'Event Tickets','🎟️',-37.8,'Shopping'],[15,'Coffee Co','☕',-5.4,'Food'],[15,'Cafe Brandon','☕',-3.75,'Food'],[14,' Instapark via Tikkie Zakelijk','🅿️',-2.02,'Transport'],[14,'CityPay Transit','🚆',-2.35,'Transport'],[14,'FuelUp','⛽',-50,'Fuel'],
 [13,'Friend transfer','👤',-50,'Transfers'],[13,'Family transfer','👤',-450,'Transfers'],[12,'Fresh Market','🛒',-6.94,'Groceries'],[12,'Discount Grocer','🛒',-46.19,'Groceries'],[12,'City Parking','🅿️',-25,'Transport'],[12,'Mega Super','🛒',-53.51,'Groceries'],
 [11,'Friend transfer','👤',-30,'Transfers'],[11,'Corner Shop','🌙',-34.45,'Food'],[11,'Fresh Market','🛒',-11.65,'Groceries'],[11,'FuelUp','⛽',-13.5,'Fuel'],
-[10,'Vet Clinic','🐾',-137.85,'Health'],[10,'City Council','🏛️',-133.93,'Bills'],[10,'Fitness Club','🏋️',-54.45,'Sport'],[10,'AllianzCare','🛡️',-1452.00,'Bills'],[10,'ParcelPost','📮',-15.89,'Shopping'],[9,'Digital Studio LLC','💼',1577.8,'Income'],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Client payment','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
+[10,'Vet Clinic','🐾',-137.85,'Health'],[10,'City Council','🏛️',-133.93,'Bills'],[10,'Fitness de Kloek','🏋️',-54.45,'Sport',{
+    // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
+    toName:'Fitness de Kloek',       // получатель
+    toAccount:'NL56 DEUT 0265 1864 20',       // тестовый счёт получателя
+    time:'16:44',                        // время операции
+    transactionDate:'10 November 2026', // дата в деталях (дата списка — первый элемент массива)
+    processingDate:'10 November 2026',  // дата обработки
+    method:'iDEAL | Wero',            // способ оплаты
+    location:'Netherlands',  // местоположение
+    ref:'10-11-2026 16:44 8030776511585438',             // тестовый референс
+    description:'www.ovpay.nl',     // текст описания
+    tag:'685570'                      // начальный тег
+}],[10,'AllianzCare','🛡️',-1452.00,'Bills',{
+    // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
+    toName:'AllianzCare',       // получатель
+    toAccount:'NL04 ADYB 2017 4001 57',       // тестовый счёт получателя
+    time:'16:44',                        // время операции
+    transactionDate:'10 November 2026', // дата в деталях (дата списка — первый элемент массива)
+    processingDate:'10 November 2026',  // дата обработки
+    method:'iDEAL | Wero',            // способ оплаты
+    location:'Netherlands',  // местоположение
+    ref:'10-11-2026 16:44 7180735293467586',             // тестовый референс
+    description:'GTT3SPGP4S59QM3JEX10
+        7180735293467586
+        e8880b032-733b-40ca-b51d-d8fcc16fd1d',     // текст описания
+    tag:'Allianz'                      // начальный тег
+}],[10,'ParcelPost','📮',-15.89,'Shopping'],[9,'Digital Studio LLC','💼',1577.8,'Income'],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Client payment','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
 let S,T,id=0;
 const hist=p=>{let h=[],x=p*.94;for(let i=0;i<30;i++){x*=1+(Math.random()-.46)*.02;h.push(+x.toFixed(2))}h[29]=p;return h};
 function init(){id=0;T=R.map(r=>({id:id++,d:new Date(2026,10,r[0]),n:r[1],i:r[2],a:r[3],c:r[4],note:r[5]?.description??'',tag:r[5]?.tag,meta:{...r[5]}}));
@@ -132,7 +158,7 @@ const dateFull=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:
 const demoMeta=t=>{const i=t.id+1,ref='DEMO-TX-'+String(i).padStart(6,'0'),account='NL61 ABNA 0811 08-'+String(i*37+1000),time=String(8+i*7%13).padStart(2,'0')+':'+String(i*17%60).padStart(2,'0'),method=t.a>0||['Transfers','Income','Savings','Invest'].includes(t.c)?'Demo bank transfer':t.c==='Bills'?'Demo online payment':t.c==='Cash'?'Demo ATM withdrawal':'Demo debit card';return {ref,account,time,method,location:t.location||'Netherlands',user:'Hr I Loskutov',userAccount:'NL17 INGB 0115 3363 03',transactionDate:dateFull(t.d),processingDate:dateFull(t.d),...t.meta,...(t.location!==undefined?{location:t.location}:{})}};
 const parties=t=>{const m=demoMeta(t),merchant=[t.n,m.account],user=[m.user,m.userAccount];const [to,from]=t.a<0?[merchant,user]:[user,merchant];return [[m.toName??to[0],m.toAccount??to[1]],[m.fromName??from[0],m.fromAccount??from[1]]]};
 const txDateText=m=>[m.transactionDate,m.time].filter(v=>v!==''&&v!=null).join(m.transactionDate?' at ':'');
-const txDescription=t=>{const m=demoMeta(t),[to,from]=parties(t);return `Name: ${t.n}\nDescription: ${t.meta?.description!==undefined||t.note!==''?t.note:'Secured '+t.c.toLowerCase()+' transaction'}\nAccount: ${t.a<0?to[1]:from[1]}\nReference: ${m.ref}\nValue date: ${m.transactionDate}\nStatus: Secured · not a real payment`};
+const txDescription=t=>{const m=demoMeta(t),[to,from]=parties(t);return `Name: ${t.n}\nDescription: ${t.meta?.description!==undefined||t.note!==''?t.note:'Secured '+t.c.toLowerCase()+' transaction'}\nAccount: ${t.a<0?to[1]:from[1]}\nReference: ${m.ref}\nValue date: ${m.transactionDate}`};
 const copyBtn=(k)=>`<button class="txcopy" data-a="txcopy" data-v="${k}" aria-label="Copy ${k}">${ico('copy')}</button>`;
 const field=(l,v,sub='',right='')=>`<div class="txfield"><div class="txvalue"><div class="label">${l}</div><strong>${esc(v)}</strong>${sub?`<div class="sub">${esc(sub)}</div>`:''}</div>${right}</div>`;
 const opt=(k,l,a)=>`<button class="txopt" data-a="${a}">${ico(k)}<span>${l}</span><span class="end">›</span></button>`;
