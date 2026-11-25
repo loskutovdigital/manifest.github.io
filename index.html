@@ -205,6 +205,11 @@ $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
+  // Сюда можно прописать готовые PDF по ref или названию получателя (не перезаписываются)
+  customFiles: {
+    // '22-11-2026 13:19 0031184717041328': './statements/example_01.pdf',
+    // 'Instapark via Tikkie Zakelijk': './statements/example_01.pdf'
+  },
   // Статические тексты бланка
   staticText: {
     titleRegular: 'Statement ',
@@ -228,29 +233,25 @@ const PDF_CONFIG = {
   },
   // Координаты и размеры в долях от ширины (W) и высоты (H) листа A4
   layout: {
-    titleSize:     0.0255, // Заголовок "Statement current account"
-    helpSize:      0.0148, // Строки "At ING.nl..."
-    labelSize:     0.0145, // Подписи "Period", "Account number" и заголовки таблицы
-    footerSize:    0.0142, // Юридический текст внизу под оранжевой линией
-    fontSize:      0.0168, // Основной шрифт данных, адреса и значений
-    lineHeight:    0.0225, // Межстрочный интервал в Description
-    maxChars:      45,     // Перенос длинных строк до колонки Type
+    titleSize:     0.0255,
+    helpSize:      0.0148,
+    labelSize:     0.0145,
+    footerSize:    0.0142,
+    fontSize:      0.0168,
+    lineHeight:    0.0225,
+    maxChars:      45,
 
-    // Верхний правый заголовок (слева от иконки кошелька)
     headerTitle:   { rightX: 0.883, y: 0.943 },
     help1:         { rightX: 0.934, y: 0.923 },
     help2:         { rightX: 0.934, y: 0.908 },
 
-    // Адрес владельца счёта слева
     address:       { x: 0.116, y: 0.838, stepY: 0.016 },
 
-    // Правый блок: Period и Account number (с отступами от серых линий)
     periodLabel:   { rightX: 0.934, y: 0.857 },
     periodValue:   { rightX: 0.934, y: 0.842 },
     accountLabel:  { rightX: 0.934, y: 0.823 },
     accountValue:  { rightX: 0.934, y: 0.808 },
 
-    // Заголовки колонок таблицы (ниже оранжевой линии) и первая строка транзакции
     tableHeaderY:  0.674,
     rowTopY:       0.646,
     dateX:         0.080,
@@ -258,7 +259,14 @@ const PDF_CONFIG = {
     typeX:         0.618,
     amountRightX:  0.934,
 
-    // Нижний подвал под оранжевой линией
+    // Чёрная разделительная линия под блоком текста транзакции
+    tableLine: {
+      startX:       0.081, // Левый край линии (по ширине оранжевой шапки)
+      endX:         0.938, // Правый край линии
+      gapBelowText: 0.58,  // Отступ вниз от последней строки (в долях от lineHeight)
+      thickness:    0.0012 // Толщина линии
+    },
+
     footerLeftX:   0.080,
     footerRightX:  0.934,
     footerLine1Y:  0.056,
@@ -288,6 +296,31 @@ function formatPdfDate(dateStr, fallbackDateObj) {
   return dateStr || '';
 }
 
+function formatIsoDate(dateStr, fallbackDateObj) {
+  if (dateStr) {
+    const iso = dateStr.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
+    if (iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+    const num = dateStr.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+    if (num) return `${num[3]}-${num[2].padStart(2, '0')}-${num[1].padStart(2, '0')}`;
+    const months = {
+      january: '01', february: '02', march: '03', april: '04',
+      may: '05', june: '06', july: '07', august: '08',
+      september: '09', october: '10', november: '11', december: '12'
+    };
+    const parts = dateStr.trim().split(/\s+/);
+    if (parts.length === 3 && months[parts[1].toLowerCase()]) {
+      return `${parts[2]}-${months[parts[1].toLowerCase()]}-${parts[0].padStart(2, '0')}`;
+    }
+  }
+  if (fallbackDateObj instanceof Date) {
+    const yyyy = fallbackDateObj.getFullYear();
+    const mm = String(fallbackDateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(fallbackDateObj.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return '';
+}
+
 function wrapPdfLines(text, maxChars) {
   if (!text) return [];
   const lines = [];
@@ -303,13 +336,30 @@ function wrapPdfLines(text, maxChars) {
 async function generateStatementPdf(t) {
   if (!t) return;
   try {
+    const m = demoMeta(t);
+    const [to, from] = parties(t);
+    const counterparty = t.a < 0 ? to : from;
+
+    // 1. Проверяем, не привязан ли к этой транзакции готовый PDF-пример
+    const customPdfUrl = t.meta?.pdfUrl
+      || PDF_CONFIG.customFiles[m.ref]
+      || PDF_CONFIG.customFiles[(t.n || '').trim()];
+
+    if (customPdfUrl) {
+      const a = document.createElement('a');
+      a.href = customPdfUrl;
+      a.download = customPdfUrl.split('/').pop() || 'statement.pdf';
+      a.target = '_blank';
+      document.body.append(a);
+      a.click();
+      a.remove();
+      return toast('Statement PDF generated');
+    }
+
     if (typeof PDFLib === 'undefined') return toast('PDF library not loaded');
     toast('Generating PDF...');
 
     const { PDFDocument, StandardFonts, rgb } = PDFLib;
-    const m = demoMeta(t);
-    const [to, from] = parties(t);
-    const counterparty = t.a < 0 ? to : from;
 
     const txDateStr   = formatPdfDate(m.transactionDate, t.d);
     const procDateStr = formatPdfDate(m.processingDate || m.transactionDate, t.d);
@@ -319,6 +369,12 @@ async function generateStatementPdf(t) {
     const rawDesc     = (t.meta?.description !== undefined || t.note !== '')
       ? t.note
       : ('Secured ' + t.c.toLowerCase() + ' transaction');
+
+    // Имя файла и Title: IBANбезПробелов_ГГГГ-ММ-ДД_ГГГГ-ММ-ДД
+    const cleanIban  = (counterparty[1] || m.ref || 'Statement').replace(/\s+/g, '');
+    const txIsoDate  = formatIsoDate(m.transactionDate, t.d);
+    const valIsoDate = formatIsoDate(m.processingDate || m.transactionDate, t.d);
+    const docTitle   = `${cleanIban}_${txIsoDate}_${valIsoDate}`;
 
     const ST = PDF_CONFIG.staticText;
     const L  = PDF_CONFIG.layout;
@@ -337,26 +393,14 @@ async function generateStatementPdf(t) {
       return res.arrayBuffer();
     });
 
-    // Создаём чистый документ стандартного физического размера A4 (чтобы открывался в 100% масштабе)
     const pdfDoc = await PDFDocument.create();
     const [embeddedTemplate] = await pdfDoc.embedPdf(existingPdfBytes, [0]);
 
-    const W = 595.28; // Стандартная ширина A4 в пунктах (210 мм)
-    const H = W * (embeddedTemplate.height / embeddedTemplate.width); // Пропорциональная высота A4 (~841.89 pt)
+    const W = 595.28;
+    const H = W * (embeddedTemplate.height / embeddedTemplate.width);
     const page = pdfDoc.addPage([W, H]);
 
-    // Вписываем подложку шаблона ровно в лист A4
-    page.drawPage(embeddedTemplate, {
-      x: 0,
-      y: 0,
-      width: W,
-      height: H
-    });
-
-    // Перезаписываем внутренний Title документа (IBAN или Reference + дата и время)
-    const targetId    = (counterparty[1] || m.ref || 'Statement').trim();
-    const dateTimeStr = [txDateStr, m.time].filter(Boolean).join(' ');
-    const docTitle    = `${targetId} - ${dateTimeStr}`;
+    page.drawPage(embeddedTemplate, { x: 0, y: 0, width: W, height: H });
     pdfDoc.setTitle(docTitle);
 
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -382,7 +426,7 @@ async function generateStatementPdf(t) {
       });
     };
 
-    // --- 1. ВЕРХНИЙ ЗАГОЛОВОК "Statement current account" + ПОДСКАЗКИ ---
+    // --- 1. ВЕРХНИЙ ЗАГОЛОВОК ---
     const wBold = fontBold.widthOfTextAtSize(ST.titleBold, titleSize);
     const wReg  = fontRegular.widthOfTextAtSize(ST.titleRegular, titleSize);
     page.drawText(ST.titleRegular, {
@@ -403,7 +447,7 @@ async function generateStatementPdf(t) {
     drawRight(ST.helpLine1, L.help1.rightX, L.help1.y, helpSize, fontRegular, textColor);
     drawRight(ST.helpLine2, L.help2.rightX, L.help2.y, helpSize, fontRegular, textColor);
 
-    // --- 2. АДРЕСНЫЙ БЛОК ВЛАДЕЛЬЦА СЧЁТА СЛЕВА ---
+    // --- 2. АДРЕСНЫЙ БЛОК ---
     const holderName = m.user || ST.holderName;
     [holderName, ST.addressLine1, ST.addressLine2].forEach((line, idx) => {
       page.drawText(line, {
@@ -457,10 +501,19 @@ async function generateStatementPdf(t) {
       color: textColor
     });
 
-    // Сумма жирным шрифтом
     drawRight(amountStr, L.amountRightX, L.rowTopY, fontSize, fontBold, textColor);
 
-    // --- 6. НИЖНИЙ ФУТЕР ПОД ОРАНЖЕВОЙ ЛИНИЕЙ ---
+    // --- 6. ДИНАМИЧЕСКАЯ ЧЁРНАЯ ЛИНИЯ ПОД ТЕКСТОМ ТРАНЗАКЦИИ ---
+    const lastLineY = rowY - (Math.max(descLines.length, 1) - 1) * lineHeight;
+    const bottomLineY = lastLineY - lineHeight * L.tableLine.gapBelowText;
+    page.drawLine({
+      start: { x: W * L.tableLine.startX, y: bottomLineY },
+      end:   { x: W * L.tableLine.endX,   y: bottomLineY },
+      thickness: W * L.tableLine.thickness,
+      color: rgb(0.18, 0.18, 0.18)
+    });
+
+    // --- 7. НИЖНИЙ ФУТЕР ---
     page.drawText(ST.footerLine1, {
       x: W * L.footerLeftX,
       y: H * L.footerLine1Y,
@@ -498,7 +551,7 @@ async function generateStatementPdf(t) {
     const blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = docTitle.replace(/[\/\\:]/g, '-').replace(/\s+/g, '_') + '.pdf';
+    a.download = `${docTitle}.pdf`;
     a.target = '_blank';
     document.body.append(a);
     a.click();
