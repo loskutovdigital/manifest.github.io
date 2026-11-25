@@ -57,17 +57,28 @@ CC={Groceries:'#34c759',Transport:'#5ac8fa',Food:'#ff9f0a',Fuel:'#ff453a',Bills:
 TT={ov:'Current account',in:'Insight',iv:'Investments',pr:'Products',sv:'Service'},
 PI={'Debit card':'💳','Credit card':'💎','Personal loan':'🏦','Travel insurance':'🧳'},
 dl=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'long'}),
-R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport'],[20,'CityPay Transit','🚆',-6.15,'Transport',{
+R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport',{
     // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
-    toName:'Demo Transit Company',       // получатель
-    toAccount:'DEMO-ACCOUNT-0202',       // тестовый счёт получателя
-    time:'14:35',                        // время операции
+    toName:'Instapark via Tikkie Zakelijk',       // получатель
+    toAccount:'NL61 ABNA 0811 0864 96',       // тестовый счёт получателя 
+    time:'13:19',                        // время операции
+    transactionDate:'22 November 2026', // дата в деталях (дата списка — первый элемент массива)
+    processingDate:'22 November 2026',  // дата обработки
+    method:'iDEAL | Wero',            // способ оплаты
+    ref:'22-11-2026 13:19 0031184717041328',             // тестовый референс
+    description:'B20261122X002HJX001335475723',     // текст описания
+    tag:'Transport'                      // начальный тег
+}],[20,'CityPay Transit','🚆',-6.15,'Transport',{
+    // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
+    toName:'CityPay',       // получатель
+    toAccount:'NLOV485Q4E9VRNVJ9L',       // тестовый счёт получателя
+    time:'0:39',                        // время операции
     transactionDate:'20 November 2026', // дата в деталях (дата списка — первый элемент массива)
-    processingDate:'21 November 2026',  // дата обработки
-    method:'Demo debit card',            // способ оплаты
-    location:'Amsterdam, Netherlands',  // местоположение
-    ref:'DEMO-TX-TEST-0002',             // тестовый референс
-    description:'Demo transit fare',     // текст описания
+    processingDate:'20 November 2026',  // дата обработки
+    method:'Payment terminal',            // способ оплаты
+    location:'Netherlands',  // местоположение
+    ref:'I49033 Term:PT30C627',             // тестовый референс
+    description:'www.ovpay.nl',     // текст описания
     tag:'Transport'                      // начальный тег
 }],[19,'Burger Spot','🍔',-10.95,'Food'],[18,'FuelUp','⛽',-21.48,'Fuel'],[18,'Cafe Blackstar','☕',-6,'Food'],[18,'Corner Pub','🍺',-8,'Food'],[18,'Corner Pub','🍺',-9.5,'Food'],[18,'Corner Pub','🍺',-8,'Food'],[18,'City Parking','🅿️',-48,'Transport'],[18,'Fresh Market','🛒',-3.25,'Groceries'],[18,'Family transfer','👤',-40,'Transfers'],
 [17,'Family transfer','👤',60,'Transfers'],[17,'AllianzDirect','🛡️',-64.38,'Bills'],[16,'CityPay Transit','🚆',-3.8,'Transport'],[16,'Shopzon','📦',-41.75,'Shopping'],[16,'Partner payout','💶',10,'Income'],[16,'FuelUp','⛽',-21.64,'Fuel'],
