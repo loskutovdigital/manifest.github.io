@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Wallet – interactive demo</title>
+<style>
+:root{--bg:#f2f2f5;--cd:#fff;--tx:#111;--mu:#7b7b86;--ac:#ff6200;--ln:#e0e0e6;--gn:#12a150;--gb:#d9f5e3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d0d0d;--cd:#1c1c1e;--tx:#f5f5f7;--mu:#98989f;--ln:#2c2c2e;--gn:#7ef0a8;--gb:#0c3d1c;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0d0d0d;--cd:#1c1c1e;--tx:#f5f5f7;--mu:#98989f;--ln:#2c2c2e;--gn:#7ef0a8;--gb:#0c3d1c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.35 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+*{-webkit-tap-highlight-color:transparent}svg{max-width:100%;height:auto}
+#app{max-width:430px;margin:0 auto;height:100%;position:relative;overflow:hidden;background:var(--bg)}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;height:44px;font-weight:700;font-size:17px}
+.ib{width:40px;height:40px;border-radius:50%;background:var(--cd);border:0;color:var(--tx);font-size:16px;cursor:pointer}
+#scr{height:calc(100% - 60px);overflow-y:auto;padding:0 16px 120px}
+.ctr{text-align:center;padding:14px 0 6px}.nm{color:#ff8fc8;font-weight:600}
+.bal{font-size:54px;font-weight:800;color:var(--ac);letter-spacing:-2px;transition:filter .2s}.blur{filter:blur(12px)}
+.mu{color:var(--mu)}
+.acts{display:flex;justify-content:space-around;margin:16px 0}.ac{text-align:center;font-size:13px;cursor:pointer;width:25%}
+.ac b{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;margin:0 auto 6px;background:var(--cd);font-size:22px;font-weight:400}.ac b.w{background:var(--tx);color:var(--bg)}
+h3{margin:0 0 8px}h4{margin:20px 0 4px;font-size:16px}
+.row{display:flex;align-items:center;gap:12px;padding:9px 0;cursor:pointer}
+.ic{width:40px;height:40px;border-radius:12px;background:var(--cd);display:grid;place-items:center;font-size:20px;flex:none}
+.row .n{flex:1;min-width:0}.am{font-weight:600;white-space:nowrap}.pos{background:var(--gb);color:var(--gn);padding:3px 8px;border-radius:6px}
+.card{background:var(--cd);border-radius:18px;padding:14px;margin:12px 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.chip{padding:7px 13px;border-radius:99px;background:var(--cd);font-size:13px;cursor:pointer;border:1px solid var(--ln)}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+nav{position:absolute;left:10px;right:10px;bottom:10px;display:flex;background:var(--cd);border:1px solid var(--ln);border-radius:32px;padding:5px;z-index:3}
+nav button{flex:1;border:0;background:none;color:var(--mu);font-size:11px;padding:6px 0;border-radius:26px;cursor:pointer}nav button span{display:block;font-size:20px}nav button.on{background:var(--bg);color:var(--tx);font-weight:700}
+.sh{position:absolute;inset:0;display:none;z-index:5}.sh.on{display:block}.bd{position:absolute;inset:0;background:#0009}
+.pn{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow:auto;background:var(--cd);border-radius:24px 24px 0 0;padding:20px 18px 30px;box-sizing:border-box}
+input,select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font-size:16px;margin:6px 0;box-sizing:border-box}input[type=range]{padding:0;accent-color:var(--ac)}
+.btn{width:100%;padding:14px;border:0;border-radius:14px;background:var(--ac);color:#fff;font-weight:700;font-size:16px;margin-top:8px;cursor:pointer}.btn.g{background:var(--bg);color:var(--tx)}
+.bar{height:8px;border-radius:9px;background:var(--ln);overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;transition:width .3s}
+.sw{width:46px;height:28px;border-radius:99px;background:var(--ln);position:relative;flex:none}.sw.on{background:var(--gn)}.sw:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.sw.on:after{left:21px}
+#ts{position:absolute;left:50%;top:60px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;opacity:0;transition:.3s;z-index:9;pointer-events:none;font-size:14px;white-space:nowrap}#ts.on{opacity:1}
+.cv{border-radius:22px;padding:20px;color:#fff;background:linear-gradient(135deg,#ff6200,#b3125f);position:relative;min-height:170px;margin-top:8px}
+.frz{position:absolute;inset:0;background:#000b;border-radius:22px;display:grid;place-items:center;font-weight:700;font-size:18px}
+.donut{width:160px;height:160px;border-radius:50%;margin:8px auto;display:grid;place-items:center}.donut div{width:100px;height:100px;border-radius:50%;background:var(--cd);display:grid;place-items:center;text-align:center;font-weight:700;font-size:14px}
+.bub{padding:9px 13px;border-radius:16px;margin:6px 0;max-width:80%}.bub.u{background:var(--ac);color:#fff;margin-left:auto}.bub.b{background:var(--bg)}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+</style></head><body>
+<div id="app"><header><button class="ib" style="visibility:hidden">‹</button><b></b><button class="ib" id="sb" data-a="srch">🔍</button></header><main id="scr"></main>
+<nav><button data-a="tab" data-v="ov"><span>👛</span>Overview</button><button data-a="tab" data-v="in"><span>💡</span>Insight</button><button data-a="tab" data-v="iv"><span>📈</span>Investments</button><button data-a="tab" data-v="pr"><span>🧺</span>Products</button><button data-a="tab" data-v="sv"><span>👤</span>Service</button></nav>
+<div class="sh"><div class="bd" data-a="cl"></div><div class="pn"></div></div><div id="ts"></div></div>
+<script>
+const $=s=>document.querySelector(s),f2=n=>Math.abs(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2}),
+E=n=>(n<0?'−':'+')+f2(n)+' €',B=n=>(n<0?'−':'')+f2(n)+' €',
+CC={Groceries:'#34c759',Transport:'#5ac8fa',Food:'#ff9f0a',Fuel:'#ff453a',Bills:'#bf5af2',Shopping:'#ff2d92',Health:'#64d2ff',Sport:'#30d158',Transfers:'#8e8e93',Income:'#34c759',Cash:'#a2845e',Savings:'#ffd60a',Invest:'#0a84ff'},
+TT={ov:'Current account',ins:'Insight',iv:'Investments',pr:'Products',sv:'Service'},
+PI={'Debit card':'💳','Credit card':'💎','Personal loan':'🏦','Travel insurance':'🧳'},
+dl=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'long'}),
+R=[[22,'Park&Go','🅿️',-2.54,'Transport'],[20,'CityPay Transit','🚆',-6.15,'Transport'],[19,'Burger Spot','🍔',-10.95,'Food'],[18,'FuelUp','⛽',-21.48,'Fuel'],[18,'Cafe Blackstar','☕',-6,'Food'],[18,'Corner Pub','🍺',-8,'Food'],[18,'Corner Pub','🍺',-9.5,'Food'],[18,'Corner Pub','🍺',-8,'Food'],[18,'City Parking','🅿️',-48,'Transport'],[18,'Fresh Market','🛒',-3.25,'Groceries'],[18,'Family transfer','👤',-40,'Transfers'],
+[17,'Family transfer','👤',60,'Transfers'],[17,'Insure Direct','🛡️',-64.38,'Bills'],[16,'CityPay Transit','🚆',-3.8,'Transport'],[16,'Shopzon','📦',-41.75,'Shopping'],[16,'Partner payout','💶',10,'Income'],[16,'FuelUp','⛽',-21.64,'Fuel'],
+[15,'FuelUp','⛽',-25.54,'Fuel'],[15,'Event Tickets','🎟️',-37.8,'Shopping'],[15,'Coffee Co','☕',-5.4,'Food'],[15,'Cafe Brandon','☕',-3.75,'Food'],[14,'Park&Go','🅿️',-2.02,'Transport'],[14,'CityPay Transit','🚆',-2.35,'Transport'],[14,'FuelUp','⛽',-50,'Fuel'],
+[13,'Friend transfer','👤',-50,'Transfers'],[13,'Family transfer','👤',-450,'Transfers'],[12,'Fresh Market','🛒',-6.94,'Groceries'],[12,'Discount Grocer','🛒',-46.19,'Groceries'],[12,'City Parking','🅿️',-25,'Transport'],[12,'Mega Super','🛒',-53.51,'Groceries'],
+[11,'Friend transfer','👤',-30,'Transfers'],[11,'Corner Shop','🌙',-34.45,'Food'],[11,'Fresh Market','🛒',-11.65,'Groceries'],[11,'FuelUp','⛽',-13.5,'Fuel'],
+[10,'Vet Clinic','🐾',-137.85,'Health'],[10,'City Council','🏛️',-133.93,'Bills'],[10,'Fitness Club','🏋️',-54.45,'Sport'],[10,'Insure Direct','🛡️',-64.38,'Bills'],[10,'ParcelPost','📮',-15.89,'Shopping'],[9,'Digital Studio LLC','💼',1577.8,'Income'],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Client payment','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
+let S,T,id=0;
+const hist=p=>{let h=[],x=p*.94;for(let i=0;i<30;i++){x*=1+(Math.random()-.46)*.02;h.push(+x.toFixed(2))}h[29]=p;return h};
+function init(){id=0;T=R.map(r=>({id:id++,d:new Date(2026,10,r[0]),n:r[1],i:r[2],a:r[3],c:r[4],note:''}));
+S={tab:'ov',q:'',cat:null,flt:'all',sr:0,bal:2480.6,hide:0,dark:1,face:1,budget:900,out:0,reqs:[],frozen:0,show:0,limit:1000,pot:{goal:1500,sum:420},prod:{'Debit card':1,'Credit card':0,'Personal loan':0,'Travel insurance':1},chat:[['b','Hi! How can I help you today?']],
+hold:[['ACME','Acme Corp','🏢',182.4,3],['GRN','Green Energy ETF','🌱',54.12,10],['GOLD','Gold ETF','🥇',64.3,0],['TECH','TechWorld','💻',311.8,1]].map(([s,n,e,p,q])=>({s,n,e,p,q,h:hist(p)}))};
+document.documentElement.dataset.theme='dark'}
+const ok=a=>a>=0||S.bal+a>=0||(toast('Insufficient balance'),false),
+add=(n,i,a,c)=>{T.unshift({id:id++,d:new Date(2026,10,25),n,i,a,c,note:''});S.bal+=a},
+toast=m=>{const t=$('#ts');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)},
+op=h=>{$('.pn').innerHTML=h;$('.sh').classList.add('on')},cl=()=>$('.sh').classList.remove('on'),
+sw=(l,k)=>`<div class="row" data-a="sw" data-v="${k}"><span class="n">${l}</span><span class="sw${S[k]?' on':''}"></span></div>`,
+sp=(h,w,hh,c)=>{const mn=Math.min(...h),mx=Math.max(...h);return `<svg viewBox="0 0 ${w} ${hh}" width="${w}" height="${hh}"><polyline fill="none" stroke="${c}" stroke-width="2" points="${h.map((v,i)=>(i*w/(h.length-1)).toFixed(1)+','+(hh-(v-mn)/(mx-mn||1)*(hh-4)-2).toFixed(1)).join(' ')}"/></svg>`},
+chg=a=>(a.p/a.h[0]-1)*100;
+/* ---------- views ---------- */
+const list=()=>{const L=T.filter(t=>(S.flt=='all'||(S.flt=='in'?t.a>0:t.a<0))&&(!S.cat||t.c==S.cat)&&(!S.q||(t.n+t.c).toLowerCase().includes(S.q.toLowerCase())));
+if(!L.length)return '<p class="mu">No transactions found. Clear the search or filters.</p>';let o='',k='';
+for(const t of L){const dk=t.d.toDateString();if(dk!=k){k=dk;o+=`<h4>${dl(t.d)}</h4>`}
+o+=`<div class="row" data-a="tx" data-v="${t.id}"><span class="ic">${t.i}</span><span class="n">${t.n}</span><span class="am${t.a>0?' pos':''}">${E(t.a)}</span></div>`}return o};
+const ov=()=>`<div class="ctr"><div class="nm">Demo User</div><div class="bal${S.hide?' blur':''}">${B(S.bal)}</div><div>NL00 DEMO 0123 4567 89</div></div>
+<div class="acts">${[['↑','Transfer','tr','w'],['↓','Request','rq','w'],['🔭','Look Ahead','la',''],['⚙️','Settings','st','']].map(x=>`<div class="ac" data-a="${x[2]}"><b class="${x[3]}">${x[0]}</b>${x[1]}</div>`).join('')}</div>
+${S.reqs.map((r,k)=>`<div class="card"><b>Request ${B(r.a)}</b><div class="mu">from ${r.n} · waiting for payment</div><button class="btn g" data-a="paid" data-v="${k}">Simulate: payment received</button></div>`).join('')}
+${S.sr?`<input id="q" data-i="q" placeholder="Search transactions" value="${S.q}">`:''}
+<div class="chips">${[['all','All'],['in','Income'],['out','Spending']].map(x=>`<span class="chip${S.flt==x[0]?' on':''}" data-a="flt" data-v="${x[0]}">${x[1]}</span>`).join('')}${S.cat?`<span class="chip on" data-a="nocat">${S.cat} ✕</span>`:''}</div><div id="lst">${list()}</div>`;
+const ins=()=>{const m=T.filter(t=>t.d.getMonth()==10&&t.c!='Invest'&&t.c!='Savings'),inc=m.filter(t=>t.a>0).reduce((s,t)=>s+t.a,0),sp2={},top={};let out=0;
+m.filter(t=>t.a<0).forEach(t=>{sp2[t.c]=(sp2[t.c]||0)-t.a;top[t.n]=(top[t.n]||0)-t.a;out-=t.a});S.out=out;
+const cs=Object.entries(sp2).sort((a,b)=>b[1]-a[1]);let acc=0;const g=cs.map(([c,v])=>{const s=acc/out*100;acc+=v;return `${CC[c]} ${s}% ${acc/out*100}%`}).join(',');
+return `<div class="card"><div class="mu">November 2026</div><div style="display:flex;justify-content:space-between;margin-top:6px"><div>Income<br><b style="color:var(--gn)">${B(inc)}</b></div><div>Spending<br><b>${B(out)}</b></div><div>Net<br><b>${B(inc-out)}</b></div></div></div>
+<div class="card"><b>Spending by category</b><div class="donut" style="background:conic-gradient(${g||'var(--ln),var(--ln)'})"><div>${B(out)}</div></div>${cs.map(([c,v])=>`<div class="row" data-a="cat" data-v="${c}"><i class="dot" style="background:${CC[c]}"></i><span class="n">${c}</span><span class="am">${B(v)} <small class="mu">${Math.round(v/out*100)}%</small></span></div>`).join('')}<div class="mu">Tap a category to see its transactions</div></div>
+<div class="card"><b>Monthly budget</b><span id="bt" style="float:right">${B(out)} / ${B(S.budget)}</span><div class="bar"><i id="bb" style="width:${Math.min(100,out/S.budget*100)}%;background:${out>S.budget?'#ff453a':'var(--gn)'}"></i></div><input type="range" min="300" max="2500" step="50" value="${S.budget}" data-i="bud"></div>
+<div class="card"><b>Top merchants</b>${Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>`<div class="row" style="cursor:default"><span class="n">${n}</span><span class="am">${B(v)}</span></div>`).join('')}</div>`};
+const inv=()=>{const tv=S.hold.reduce((s,a)=>s+a.p*a.q,0),t0=S.hold.reduce((s,a)=>s+a.h[0]*a.q,0),up=tv>=t0;
+return `<div class="ctr"><div class="mu">Portfolio value · live</div><div class="bal" style="font-size:42px;color:var(--tx)">${B(tv)}</div><div style="color:${up?'var(--gn)':'#ff453a'}">${up?'▲':'▼'} ${f2(tv-t0)} € (${f2(t0?(tv/t0-1)*100:0)}%)</div></div>
+${S.hold.map(a=>{const c=chg(a),u=c>=0;return `<div class="row" data-a="as" data-v="${a.s}"><span class="ic">${a.e}</span><span class="n"><b>${a.s}</b><div class="mu">${a.n} · ${a.q} pcs</div></span>${sp(a.h,70,30,u?'#34c759':'#ff453a')}<span style="text-align:right;min-width:84px"><b>${B(a.p)}</b><div style="color:${u?'var(--gn)':'#ff453a'}">${u?'+':'−'}${f2(c)}%</div></span></div>`}).join('')}<p class="mu">Prices are simulated. Tap an asset to buy or sell with your account balance.</p>`};
+const prd=()=>`<div class="cv"><b>VISA</b><span style="float:right">Debit</span><div style="font-size:21px;letter-spacing:2px;margin:38px 0 12px">${S.show?'4000 1234 5678 0987':'•••• •••• •••• 0987'}</div>Demo User · 12/29${S.show?' · CVC 482':''}${S.frozen?'<div class="frz">❄️ Card frozen</div>':''}</div>
+<div class="acts">${[['❄️',S.frozen?'Unfreeze':'Freeze','fz'],['👁️',S.show?'Hide':'Details','shw'],['📊','Limit','lim']].map(x=>`<div class="ac" data-a="${x[2]}"><b>${x[0]}</b>${x[1]}</div>`).join('')}</div>
+<div class="card"><b>🐷 Holiday fund</b><span style="float:right">${B(S.pot.sum)} / ${B(S.pot.goal)}</span><div class="bar"><i style="width:${Math.min(100,S.pot.sum/S.pot.goal*100)}%;background:var(--ac)"></i></div><div class="chips">${[50,100,250].map(x=>`<span class="chip" data-a="top" data-v="${x}">+${x} €</span>`).join('')}</div></div>
+<h4>Products</h4>${Object.entries(S.prod).map(([k,v])=>`<div class="row" style="cursor:default"><span class="ic">${PI[k]}</span><span class="n">${k}<div class="mu">${v?'Active':'Not opened'}</div></span><span class="chip" data-a="prod" data-v="${k}">${v?'Close':'Open'}</span></div>`).join('')}`;
+const svc=()=>`<div class="card" style="display:flex;gap:14px;align-items:center"><span class="ic" style="width:56px;height:56px;border-radius:50%;font-size:26px">🧑</span><div><b>Demo User</b><div class="mu">Premium plan</div></div></div>
+${[['💬','Support chat','sup'],['📊','Payment limit','lim'],['📄','Download statement','stm'],['🔔','Notifications','ntf'],['🔒','Change PIN','pin'],['♻️','Reset demo data','reset'],['🚪','Log out','out']].map(x=>`<div class="row" data-a="${x[2]}"><span class="ic">${x[0]}</span><span class="n">${x[1]}</span><span class="mu">›</span></div>`).join('')}${sw('Face ID login','face')}`;
+function render(keep){const y=$('#scr').scrollTop;$('header b').textContent=TT[S.tab];$('#sb').style.visibility=S.tab=='ov'?'visible':'hidden';$('#scr').innerHTML=({ov,ins,iv:inv,pr:prd,sv:svc})[S.tab]();$('#scr').scrollTop=keep?y:0;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==S.tab))}
+/* ---------- actions ---------- */
+const A={cl,tab:v=>{S.tab=v;render()},srch:()=>{S.sr=!S.sr;S.q='';render(1)},flt:v=>{S.flt=v;render(1)},nocat:()=>{S.cat=null;render(1)},cat:v=>{S.cat=v;S.flt='all';S.tab='ov';render()},
+tx:v=>{const t=T.find(x=>x.id==v);op(`<div style="text-align:center"><div class="ic" style="margin:auto;width:64px;height:64px;font-size:32px">${t.i}</div><h3 style="margin-top:10px">${t.n}</h3><div class="bal" style="font-size:34px;color:${t.a>0?'var(--gn)':'var(--tx)'}">${E(t.a)}</div><div class="mu">${dl(t.d)} · ${t.c}</div></div><label class="mu">Category</label><select data-i="cat" data-v="${t.id}">${Object.keys(CC).map(c=>`<option${c==t.c?' selected':''}>${c}</option>`).join('')}</select><input data-i="note" data-v="${t.id}" placeholder="Add a note" value="${t.note}"><button class="btn" data-a="rep" data-v="${t.id}">Repeat payment</button><button class="btn g" data-a="disp">Report a problem</button>`)},
+rep:v=>{const t=T.find(x=>x.id==v);if(!ok(t.a))return;add(t.n,t.i,t.a,t.c);cl();render();toast('Payment repeated')},disp:()=>{cl();toast('Report sent to support')},
+tr:()=>op(`<h3>New transfer</h3><div class="chips">${['Family','Friend','Landlord','Alex Smith'].map(n=>`<span class="chip" data-a="pick" data-v="${n}">${n}</span>`).join('')}</div><input id="to" placeholder="Recipient name or IBAN"><input id="amt" type="number" step="0.01" placeholder="Amount, €"><input id="nt" placeholder="Description (optional)"><button class="btn" data-a="send">Send</button>`),
+pick:v=>$('#to').value=v,
+send:()=>{const a=+$('#amt').value,n=$('#to').value.trim();if(!n||!(a>0))return toast('Enter a recipient and an amount');if(a>S.limit)return toast('Above your payment limit');if(!ok(-a))return;add(n,'👤',-a,'Transfers');cl();render();toast('Sent '+B(a))},
+rq:()=>op(`<h3>Request money</h3><input id="rn" placeholder="From (name)"><input id="ra" type="number" step="0.01" placeholder="Amount, €"><button class="btn" data-a="mkrq">Send request</button>`),
+mkrq:()=>{const a=+$('#ra').value,n=$('#rn').value.trim();if(!n||!(a>0))return toast('Enter a name and an amount');S.reqs.push({n,a});cl();render();toast('Request sent')},
+paid:v=>{const r=S.reqs.splice(v,1)[0];add(r.n,'💶',r.a,'Income');render(1);toast('Received '+B(r.a))},
+la:()=>{let b=S.bal;const U=[['26 Nov','Streaming Plus','📺',-12.99],['28 Nov','Insure Direct','🛡️',-64.38],['1 Dec','Rent','🏠',-950],['1 Dec','Fitness Club','🏋️',-54.45],['5 Dec','Digital Studio LLC','💼',1500],['10 Dec','Mobile Plan','📱',-24.5]];
+op(`<h3>Look Ahead</h3><div class="mu">Scheduled payments and projected balance</div>${U.map(u=>{b+=u[3];return `<div class="row" style="cursor:default"><span class="ic">${u[2]}</span><span class="n">${u[1]}<div class="mu">${u[0]}</div></span><span class="am" style="text-align:right">${E(u[3])}<div class="mu" style="font-weight:400;color:${b<0?'#ff453a':''}">${B(b)}</div></span></div>`}).join('')}`)},
+st:()=>op(`<h3>Settings</h3>${sw('Hide balance','hide')}${sw('Dark theme','dark')}${sw('Face ID login','face')}<button class="btn g" data-a="reset">Reset demo data</button>`),
+sw:(v,t)=>{S[v]=!S[v];t.lastElementChild.classList.toggle('on');document.documentElement.dataset.theme=S.dark?'dark':'light';render(1)},
+as:v=>{const a=S.hold.find(x=>x.s==v);op(`<h3>${a.e} ${a.s} <small class="mu">${a.n}</small></h3><div class="bal" style="font-size:36px;color:var(--tx)">${B(a.p)}</div>${sp(a.h,360,110,'#ff6200')}<p class="mu">You own ${a.q} pcs · cash ${B(S.bal)}</p><input id="qq" type="number" min="1" value="1"><button class="btn" data-a="buy" data-v="${a.s}">Buy</button><button class="btn g" data-a="sell" data-v="${a.s}">Sell</button>`)},
+buy:v=>{const a=S.hold.find(x=>x.s==v),q=Math.floor(+$('#qq').value);if(!(q>0))return toast('Enter a quantity');const c=a.p*q;if(!ok(-c))return;a.q+=q;add('Bought '+q+' × '+a.s,'📈',-c,'Invest');cl();render(1);toast('Bought '+q+' × '+a.s)},
+sell:v=>{const a=S.hold.find(x=>x.s==v),q=Math.floor(+$('#qq').value);if(!(q>0))return toast('Enter a quantity');if(q>a.q)return toast('Not enough pieces to sell');a.q-=q;add('Sold '+q+' × '+a.s,'📉',a.p*q,'Invest');cl();render(1);toast('Sold '+q+' × '+a.s)},
+fz:()=>{S.frozen=!S.frozen;render(1);toast(S.frozen?'Card frozen':'Card active')},shw:()=>{S.show=!S.show;render(1)},
+lim:()=>op(`<h3>Payment limit</h3><div class="bal" id="lv" style="font-size:36px">${B(S.limit)}</div><input type="range" min="100" max="5000" step="100" value="${S.limit}" data-i="limit"><div class="mu">Transfers above this amount are blocked.</div>`),
+top:v=>{if(!ok(-v))return;add('Holiday fund','🐷',-v,'Savings');S.pot.sum+=+v;render(1);toast('Added '+B(+v)+' to Holiday fund')},
+prod:v=>{S.prod[v]=!S.prod[v];render(1);toast(v+(S.prod[v]?' opened':' closed'))},
+sup:()=>op(`<h3>Support</h3><div id="ch">${S.chat.map(m=>`<div class="bub ${m[0]}">${m[1]}</div>`).join('')}</div><input id="cm" placeholder="Type a message"><button class="btn" data-a="snd">Send</button>`),
+snd:()=>{const i=$('#cm'),v=i.value.trim();if(!v)return;S.chat.push(['u',v]);A.sup();setTimeout(()=>{const l=v.toLowerCase();S.chat.push(['b',l.includes('card')?'You can freeze your card in Products → Freeze.':l.includes('limit')?'Change your payment limit in Service → Payment limit.':'Thanks! An agent will reply shortly (demo).']);if($('.sh.on')&&$('#ch'))A.sup()},700)},
+stm:()=>toast('Statement generated (demo)'),ntf:()=>toast('Notifications are on (demo)'),pin:()=>toast('PIN change started (demo)'),out:()=>toast('Logged out (demo, nothing changes)'),
+reset:()=>{init();cl();render();toast('Demo data reset')}};
+const I={q:v=>{S.q=v;$('#lst').innerHTML=list()},cat:(v,e)=>{T.find(x=>x.id==e.dataset.v).c=v;render(1)},note:(v,e)=>{T.find(x=>x.id==e.dataset.v).note=v},
+bud:v=>{S.budget=+v;$('#bt').textContent=B(S.out)+' / '+B(S.budget);const b=$('#bb');b.style.width=Math.min(100,S.out/S.budget*100)+'%';b.style.background=S.out>S.budget?'#ff453a':'var(--gn)'},
+limit:v=>{S.limit=+v;$('#lv').textContent=B(S.limit)}};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(t&&A[t.dataset.a])A[t.dataset.a](t.dataset.v,t)});
+document.addEventListener('input',e=>{const i=e.target.dataset.i;if(i&&I[i])I[i](e.target.value,e.target)});
+setInterval(()=>{S.hold.forEach(a=>{a.p=+(a.p*(1+(Math.random()-.5)*.012)).toFixed(2);a.h.push(a.p);a.h.shift()});if(S.tab=='iv'&&!$('.sh.on'))render(1)},2500);
+init();render();
+</script></body></html>
