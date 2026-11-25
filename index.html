@@ -201,6 +201,7 @@ const similarView=()=>{const t=T.find(t=>t.id===S.similar);const matches=T.filte
 function render(keep){const scr=$('#scr'),y=scr.scrollTop,t=currentTx(),detail=!!t,similar=!detail&&S.similar!==null;$('header b').textContent=detail?'':similar?'Similar transactions':TT[S.tab];$('#back').style.visibility=detail||similar?'visible':'hidden';$('#sb').style.visibility=S.tab==='ov'&&!detail&&!similar?'visible':'hidden';scr.innerHTML=detail?txview(t):similar?similarView():({ov, in:ins,iv:inv,pr:prd,sv:svc})[S.tab]();scr.scrollTop=keep?y:0;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==S.tab));updateHeader()}
 function updateHeader(){const t=currentTx();if(t)$('header b').textContent=$('#scr').scrollTop>145?t.n:''}
 $('#scr').addEventListener('scroll',updateHeader,{passive:true});
+
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
@@ -282,6 +283,13 @@ async function generateStatementPdf(t) {
     });
 
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+    // Перезаписываем внутренний Title документа (IBAN или Reference + дата и время)
+    const targetId    = (counterparty[1] || m.ref || 'Statement').trim();
+    const dateTimeStr = [txDateStr, m.time].filter(Boolean).join(' ');
+    const docTitle    = `${targetId} - ${dateTimeStr}`;
+    pdfDoc.setTitle(docTitle);
+
     const page = pdfDoc.getPages()[0];
     const crop = page.getCropBox();
     const W = crop.width;
@@ -350,7 +358,7 @@ async function generateStatementPdf(t) {
     const blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `${m.ref || 'ING-statement'}.pdf`;
+    a.download = docTitle.replace(/[\/\\:]/g, '-').replace(/\s+/g, '_') + '.pdf';
     a.target = '_blank';
     document.body.append(a);
     a.click();
