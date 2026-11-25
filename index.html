@@ -205,16 +205,64 @@ $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
+  // Статические тексты бланка
+  staticText: {
+    titleRegular: 'Statement ',
+    titleBold:    'current account',
+    helpLine1:    'At ING.nl you will find the answers to most of your questions.',
+    helpLine2:    'Rather have personal contact? Please visit ing.nl/contact',
+    holderName:   'Hr I Loskutov',
+    addressLine1: 'Westerweg 60 153',
+    addressLine2: '1445 AD  PURMEREND',
+    periodLabel:  'Period',
+    accountLabel: 'Account number',
+    accountIban:  'NL17 INGB 0115 3363 03',
+    colDate:      'Date',
+    colDesc:      'Name / Description / Notification',
+    colType:      'Type',
+    colAmount:    'Amount (EUR)',
+    footerLine1:  'This product is covered by the deposit guarantee scheme. More information? Go to ing.nl/dgs/en',
+    footerLine2:  'ING Bank N.V., with its registered office in Amsterdam, Commercial Register No. 33031431',
+    pageBold:     'Page ',
+    pageRegular:  '1 of 1'
+  },
+  // Координаты и размеры в долях от ширины (W) и высоты (H) листа
   layout: {
-    fontSize:      0.0168, // Увеличенный размер шрифта для всех данных
+    titleSize:     0.0255, // Заголовок "Statement current account"
+    helpSize:      0.0148, // Строки "At ING.nl..."
+    labelSize:     0.0145, // Подписи "Period", "Account number" и заголовки таблицы
+    footerSize:    0.0142, // Юридический текст внизу под оранжевой линией
+    fontSize:      0.0168, // Основной шрифт данных, адреса и значений
     lineHeight:    0.0225, // Межстрочный интервал в Description
     maxChars:      45,     // Перенос длинных строк до колонки Type
-    periodValue:   { rightX: 0.934, y: 0.844 }, // Даты периода под словом Period
-    rowTopY:       0.666,  // Первая строка таблицы под оранжевой шапкой
-    dateX:         0.084,  // Колонка Date
-    descX:         0.178,  // Колонка Name / Description / Notification
-    typeX:         0.618,  // Колонка Type
-    amountRightX:  0.934   // Правый край колонки Amount (EUR)
+
+    // Верхний правый заголовок (слева от иконки кошелька)
+    headerTitle:   { rightX: 0.883, y: 0.943 },
+    help1:         { rightX: 0.934, y: 0.923 },
+    help2:         { rightX: 0.934, y: 0.908 },
+
+    // Адрес владельца счёта слева
+    address:       { x: 0.116, y: 0.836, stepY: 0.016 },
+
+    // Правый блок: Period и Account number
+    periodLabel:   { rightX: 0.934, y: 0.858 },
+    periodValue:   { rightX: 0.934, y: 0.840 },
+    accountLabel:  { rightX: 0.934, y: 0.822 },
+    accountValue:  { rightX: 0.934, y: 0.804 },
+
+    // Заголовки колонок таблицы и первая строка транзакции
+    tableHeaderY:  0.688,
+    rowTopY:       0.660,
+    dateX:         0.080,
+    descX:         0.175,
+    typeX:         0.618,
+    amountRightX:  0.934,
+
+    // Нижний подвал под оранжевой линией
+    footerLeftX:   0.080,
+    footerRightX:  0.934,
+    footerLine1Y:  0.056,
+    footerLine2Y:  0.035
   }
 };
 
@@ -272,7 +320,10 @@ async function generateStatementPdf(t) {
       ? t.note
       : ('Secured ' + t.c.toLowerCase() + ' transaction');
 
-    const L = PDF_CONFIG.layout;
+    const ST = PDF_CONFIG.staticText;
+    const L  = PDF_CONFIG.layout;
+
+    // Собираем строки блока Name / Description / Notification
     const descLines = [];
     const titleName = (counterparty[0] || t.n || '').trim();
     if (titleName)       descLines.push(...wrapPdfLines(titleName, L.maxChars));
@@ -304,22 +355,75 @@ async function generateStatementPdf(t) {
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const textColor   = rgb(0.1, 0.1, 0.1);
+    const mutedColor  = rgb(0.25, 0.25, 0.25);
 
+    const titleSize  = W * L.titleSize;
+    const helpSize   = W * L.helpSize;
+    const labelSize  = W * L.labelSize;
+    const footerSize = W * L.footerSize;
     const fontSize   = W * L.fontSize;
     const lineHeight = W * L.lineHeight;
-    const rowY       = oy + H * L.rowTopY;
 
-    // 1. Даты периода справа сверху (под словом Period на бланке)
-    const pValW = fontBold.widthOfTextAtSize(periodStr, fontSize);
-    page.drawText(periodStr, {
-      x: ox + W * L.periodValue.rightX - pValW,
-      y: oy + H * L.periodValue.y,
-      size: fontSize,
+    const drawRight = (text, rightRelX, relY, size, font, color = textColor) => {
+      const tw = font.widthOfTextAtSize(text, size);
+      page.drawText(text, {
+        x: ox + W * rightRelX - tw,
+        y: oy + H * relY,
+        size,
+        font,
+        color
+      });
+    };
+
+    // --- 1. ВЕРХНИЙ ЗАГОЛОВОК "Statement current account" + ПОДСКАЗКИ ---
+    const wBold = fontBold.widthOfTextAtSize(ST.titleBold, titleSize);
+    const wReg  = fontRegular.widthOfTextAtSize(ST.titleRegular, titleSize);
+    page.drawText(ST.titleRegular, {
+      x: ox + W * L.headerTitle.rightX - wBold - wReg,
+      y: oy + H * L.headerTitle.y,
+      size: titleSize,
+      font: fontRegular,
+      color: textColor
+    });
+    page.drawText(ST.titleBold, {
+      x: ox + W * L.headerTitle.rightX - wBold,
+      y: oy + H * L.headerTitle.y,
+      size: titleSize,
       font: fontBold,
       color: textColor
     });
 
-    // 2. Колонка Date
+    drawRight(ST.helpLine1, L.help1.rightX, L.help1.y, helpSize, fontRegular, textColor);
+    drawRight(ST.helpLine2, L.help2.rightX, L.help2.y, helpSize, fontRegular, textColor);
+
+    // --- 2. АДРЕСНЫЙ БЛОК ВЛАДЕЛЬЦА СЧЁТА СЛЕВА ---
+    const holderName = m.user || ST.holderName;
+    [holderName, ST.addressLine1, ST.addressLine2].forEach((line, idx) => {
+      page.drawText(line, {
+        x: ox + W * L.address.x,
+        y: oy + H * (L.address.y - idx * L.address.stepY),
+        size: fontSize,
+        font: fontRegular,
+        color: textColor
+      });
+    });
+
+    // --- 3. ПРАВЫЙ БЛОК: PERIOD И ACCOUNT NUMBER ---
+    const accountIban = m.userAccount || ST.accountIban;
+    drawRight(ST.periodLabel,  L.periodLabel.rightX,  L.periodLabel.y,  labelSize, fontRegular, mutedColor);
+    drawRight(periodStr,       L.periodValue.rightX,  L.periodValue.y,  fontSize,  fontBold,    textColor);
+    drawRight(ST.accountLabel, L.accountLabel.rightX, L.accountLabel.y, labelSize, fontRegular, mutedColor);
+    drawRight(accountIban,     L.accountValue.rightX, L.accountValue.y, fontSize,  fontBold,    textColor);
+
+    // --- 4. ЗАГОЛОВКИ КОЛОНОК ТАБЛИЦЫ ---
+    const thY = oy + H * L.tableHeaderY;
+    page.drawText(ST.colDate, { x: ox + W * L.dateX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
+    page.drawText(ST.colDesc, { x: ox + W * L.descX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
+    page.drawText(ST.colType, { x: ox + W * L.typeX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
+    drawRight(ST.colAmount, L.amountRightX, L.tableHeaderY, labelSize, fontRegular, mutedColor);
+
+    // --- 5. ДАННЫЕ ТРАНЗАКЦИИ ---
+    const rowY = oy + H * L.rowTopY;
     page.drawText(txDateStr, {
       x: ox + W * L.dateX,
       y: rowY,
@@ -328,7 +432,6 @@ async function generateStatementPdf(t) {
       color: textColor
     });
 
-    // 3. Колонка Name / Description / Notification
     descLines.forEach((line, idx) => {
       page.drawText(line, {
         x: ox + W * L.descX,
@@ -339,7 +442,6 @@ async function generateStatementPdf(t) {
       });
     });
 
-    // 4. Колонка Type
     page.drawText(methodStr, {
       x: ox + W * L.typeX,
       y: rowY,
@@ -348,12 +450,38 @@ async function generateStatementPdf(t) {
       color: textColor
     });
 
-    // 5. Колонка Amount (EUR) с выравниванием по правому краю
-    const amountW = fontRegular.widthOfTextAtSize(amountStr, fontSize);
-    page.drawText(amountStr, {
-      x: ox + W * L.amountRightX - amountW,
-      y: rowY,
-      size: fontSize,
+    drawRight(amountStr, L.amountRightX, L.rowTopY, fontSize, fontRegular, textColor);
+
+    // --- 6. НИЖНИЙ ФУТЕР ПОД ОРАНЖЕВОЙ ЛИНИЕЙ ---
+    page.drawText(ST.footerLine1, {
+      x: ox + W * L.footerLeftX,
+      y: oy + H * L.footerLine1Y,
+      size: footerSize,
+      font: fontRegular,
+      color: textColor
+    });
+
+    page.drawText(ST.footerLine2, {
+      x: ox + W * L.footerLeftX,
+      y: oy + H * L.footerLine2Y,
+      size: footerSize,
+      font: fontRegular,
+      color: textColor
+    });
+
+    const pNumW  = fontRegular.widthOfTextAtSize(ST.pageRegular, footerSize);
+    const pWordW = fontBold.widthOfTextAtSize(ST.pageBold, footerSize);
+    page.drawText(ST.pageBold, {
+      x: ox + W * L.footerRightX - pNumW - pWordW,
+      y: oy + H * L.footerLine1Y,
+      size: footerSize,
+      font: fontBold,
+      color: textColor
+    });
+    page.drawText(ST.pageRegular, {
+      x: ox + W * L.footerRightX - pNumW,
+      y: oy + H * L.footerLine1Y,
+      size: footerSize,
       font: fontRegular,
       color: textColor
     });
