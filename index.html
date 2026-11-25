@@ -70,7 +70,7 @@ const list=()=>{const L=T.filter(t=>(S.flt=='all'||(S.flt=='in'?t.a>0:t.a<0))&&(
 if(!L.length)return '<p class="mu">No transactions found. Clear the search or filters.</p>';let o='',k='';
 for(const t of L){const dk=t.d.toDateString();if(dk!=k){k=dk;o+=`<h4>${dl(t.d)}</h4>`}
 o+=`<div class="row" data-a="tx" data-v="${t.id}"><span class="ic">${t.i}</span><span class="n">${t.n}</span><span class="am${t.a>0?' pos':''}">${E(t.a)}</span></div>`}return o};
-const ov=()=>`<div class="ctr"><div class="nm">Hr Loskutov</div><div class="bal${S.hide?' blur':''}">${B(S.bal)}</div><div>NL00 DEMO 0123 4567 89</div></div>
+const ov=()=>`<div class="ctr"><div class="nm">Hr Loskutov</div><div class="bal${S.hide?' blur':''}">${B(S.bal)}</div><div>NL17 INGB 0115 3363 03</div></div>
 <div class="acts">${[['↑','Transfer','tr','w'],['↓','Request','rq','w'],['🔭','Look Ahead','la',''],['⚙️','Settings','st','']].map(x=>`<div class="ac" data-a="${x[2]}"><b class="${x[3]}">${x[0]}</b>${x[1]}</div>`).join('')}</div>
 ${S.reqs.map((r,k)=>`<div class="card"><b>Request ${B(r.a)}</b><div class="mu">from ${r.n} · waiting for payment</div><button class="btn g" data-a="paid" data-v="${k}">Simulate: payment received</button></div>`).join('')}
 ${S.sr?`<input id="q" data-i="q" placeholder="Search transactions" value="${S.q}">`:''}
