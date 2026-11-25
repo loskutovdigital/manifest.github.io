@@ -55,6 +55,8 @@ nav{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 <nav><button data-a="tab" data-v="ov"><span>👛</span>Overview</button><button data-a="tab" data-v="in"><span>💡</span>Insight</button><button data-a="tab" data-v="iv"><span>📈</span>Investments</button><button data-a="tab" data-v="pr"><span>🧺</span>Products</button><button data-a="tab" data-v="sv"><span>👤</span>Service</button></nav>
 <div class="sh"><div class="bd" data-a="cl"></div><div class="pn"></div></div><div id="ts"></div></div>
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),f2=n=>Math.abs(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2}),
 E=n=>(n<0?'−':'+')+f2(n)+' €',B=n=>(n<0?'−':'')+f2(n)+' €',
@@ -205,6 +207,10 @@ $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
+  fonts: {
+    regularUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-400-normal.ttf',
+    boldUrl:    'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-700-normal.ttf'
+  },
   // Сюда можно прописать готовые PDF по ref или названию получателя (не перезаписываются)
   customFiles: {
     // '22-11-2026 13:19 0031184717041328': './statements/example_01.pdf',
@@ -233,25 +239,29 @@ const PDF_CONFIG = {
   },
   // Координаты и размеры в долях от ширины (W) и высоты (H) листа A4
   layout: {
-    titleSize:     0.0255,
-    helpSize:      0.0148,
-    labelSize:     0.0145,
-    footerSize:    0.0142,
-    fontSize:      0.0168,
-    lineHeight:    0.0225,
-    maxChars:      45,
+    titleSize:     0.0282, // Широкий заголовок "Statement current account" (как на скрине 1)
+    helpSize:      0.0165, // Строки "At ING.nl..." (как на скрине 1)
+    labelSize:     0.0150, // Подписи "Period", "Account number" и заголовки таблицы
+    footerSize:    0.0142, // Юридический текст внизу под оранжевой линией
+    fontSize:      0.0176, // Размер шрифта адреса (скрин 2) и данных транзакции
+    lineHeight:    0.0235, // Межстрочный интервал в Description
+    maxChars:      44,     // Перенос длинных строк до колонки Type
 
-    headerTitle:   { rightX: 0.883, y: 0.943 },
-    help1:         { rightX: 0.934, y: 0.923 },
-    help2:         { rightX: 0.934, y: 0.908 },
+    // Верхний правый заголовок (слева от иконки кошелька)
+    headerTitle:   { rightX: 0.883, y: 0.941 },
+    help1:         { rightX: 0.934, y: 0.919 },
+    help2:         { rightX: 0.934, y: 0.902 },
 
-    address:       { x: 0.116, y: 0.838, stepY: 0.016 },
+    // Адрес владельца счёта слева (выровнен по высоте правого блока, как на скрине 2)
+    address:       { x: 0.116, y: 0.840, stepY: 0.019 },
 
-    periodLabel:   { rightX: 0.934, y: 0.857 },
+    // Правый блок: Period и Account number
+    periodLabel:   { rightX: 0.934, y: 0.858 },
     periodValue:   { rightX: 0.934, y: 0.842 },
     accountLabel:  { rightX: 0.934, y: 0.823 },
-    accountValue:  { rightX: 0.934, y: 0.808 },
+    accountValue:  { rightX: 0.934, y: 0.807 },
 
+    // Заголовки колонок таблицы и первая строка транзакции
     tableHeaderY:  0.674,
     rowTopY:       0.646,
     dateX:         0.080,
@@ -259,20 +269,47 @@ const PDF_CONFIG = {
     typeX:         0.618,
     amountRightX:  0.934,
 
-    // Чёрная разделительная линия под блоком текста транзакции
+    // Динамическая чёрная разделительная линия под блоком текста транзакции
     tableLine: {
-      startX:       0.081, // Левый край линии (по ширине оранжевой шапки)
-      endX:         0.938, // Правый край линии
-      gapBelowText: 0.58,  // Отступ вниз от последней строки (в долях от lineHeight)
-      thickness:    0.0012 // Толщина линии
+      startX:       0.081,
+      endX:         0.938,
+      gapBelowText: 0.58,
+      thickness:    0.0012
     },
 
+    // Нижний подвал под оранжевой линией
     footerLeftX:   0.080,
     footerRightX:  0.934,
     footerLine1Y:  0.056,
     footerLine2Y:  0.035
   }
 };
+
+let _cachedPdfFontBytes = null;
+async function loadStatementFonts(pdfDoc) {
+  const { StandardFonts } = PDFLib;
+  if (typeof fontkit !== 'undefined') {
+    try {
+      if (!_cachedPdfFontBytes) {
+        const [regBuf, boldBuf] = await Promise.all([
+          fetch(PDF_CONFIG.fonts.regularUrl).then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); }),
+          fetch(PDF_CONFIG.fonts.boldUrl).then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
+        ]);
+        _cachedPdfFontBytes = { regBuf, boldBuf };
+      }
+      pdfDoc.registerFontkit(fontkit);
+      const fontRegular = await pdfDoc.embedFont(_cachedPdfFontBytes.regBuf);
+      const fontBold    = await pdfDoc.embedFont(_cachedPdfFontBytes.boldBuf);
+      return { fontRegular, fontBold };
+    } catch (e) {
+      // Если шрифт недоступен, плавно используем встроенный Helvetica
+    }
+  }
+  return {
+    fontRegular: await pdfDoc.embedFont(StandardFonts.Helvetica),
+    fontBold:    await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  };
+}
 
 function formatPdfDate(dateStr, fallbackDateObj) {
   if (dateStr) {
@@ -359,7 +396,7 @@ async function generateStatementPdf(t) {
     if (typeof PDFLib === 'undefined') return toast('PDF library not loaded');
     toast('Generating PDF...');
 
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const { PDFDocument, rgb } = PDFLib;
 
     const txDateStr   = formatPdfDate(m.transactionDate, t.d);
     const procDateStr = formatPdfDate(m.processingDate || m.transactionDate, t.d);
@@ -403,10 +440,9 @@ async function generateStatementPdf(t) {
     page.drawPage(embeddedTemplate, { x: 0, y: 0, width: W, height: H });
     pdfDoc.setTitle(docTitle);
 
-    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const textColor   = rgb(0.1, 0.1, 0.1);
-    const mutedColor  = rgb(0.25, 0.25, 0.25);
+    const { fontRegular, fontBold } = await loadStatementFonts(pdfDoc);
+    const textColor  = rgb(0.1, 0.1, 0.1);
+    const mutedColor = rgb(0.25, 0.25, 0.25);
 
     const titleSize  = W * L.titleSize;
     const helpSize   = W * L.helpSize;
