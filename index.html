@@ -243,8 +243,11 @@ function formatPdfDate(dateStr, fallbackDateObj) {
 function wrapPdfLines(text, maxChars) {
   if (!text) return [];
   const lines = [];
-  for (let i = 0; i < text.length; i += maxChars) {
-    lines.push(text.slice(i, i + maxChars));
+  for (const rawLine of String(text).split(/\r?\n/)) {
+    if (!rawLine) continue;
+    for (let i = 0; i < rawLine.length; i += maxChars) {
+      lines.push(rawLine.slice(i, i + maxChars));
+    }
   }
   return lines;
 }
