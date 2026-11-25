@@ -81,9 +81,21 @@ R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport',{
     description:'www.ovpay.nl',     // текст описания
     tag:'Transport'                      // начальный тег
 }],[19,'Burger Spot','🍔',-10.95,'Food'],[18,'FuelUp','⛽',-21.48,'Fuel'],[18,'Cafe Blackstar','☕',-6,'Food'],[18,'Corner Pub','🍺',-8,'Food'],[18,'Corner Pub','🍺',-9.5,'Food'],[18,'Corner Pub','🍺',-8,'Food'],[18,'City Parking','🅿️',-48,'Transport'],[18,'Fresh Market','🛒',-3.25,'Groceries'],[18,'Family transfer','👤',-40,'Transfers'],
-[17,'Family transfer','👤',60,'Transfers'],[17,'AllianzDirect','🛡️',-64.38,'Bills'],[16,'CityPay Transit','🚆',-3.8,'Transport'],[16,'Shopzon','📦',-41.75,'Shopping'],[16,'Partner payout','💶',10,'Income'],[16,'FuelUp','⛽',-21.64,'Fuel'],
+[17,'Family transfer','👤',60,'Transfers'],[17,'AllianzDirect','🛡️',-64.38,'Bills',{
+    // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
+    toName:'Allianz Direct Vers.',       // получатель
+    toAccount:'DE90 7002 0270 0020 1290 28',       // тестовый счёт получателя
+    time:'1:32',                        // время операции
+    transactionDate:'17 November 2026', // дата в деталях (дата списка — первый элемент массива)
+    processingDate:'17 November 2026',  // дата обработки
+    method:'SEPA direct debit',            // способ оплаты
+    location:'Germany',  // местоположение
+    ref:'ACB26316-E56303316\nMandate ID:\n01DN0000000000000000000000002223082\nCreditor ID: NL66ZZZ290379290000\nRecurrent SEPA direct debit\nOther party: Allianz Direct Netherlands,\nDE90700202700020129028',             // тестовый референс
+    description:'DN114380148',     // текст описания
+    tag:'Allianz'                      // начальный тег
+}],[16,'CityPay Transit','🚆',-3.8,'Transport'],[16,'Shopzon','📦',-41.75,'Shopping'],[16,'Partner payout','💶',10,'Income'],[16,'FuelUp','⛽',-21.64,'Fuel'],
 [15,'FuelUp','⛽',-25.54,'Fuel'],[15,'Event Tickets','🎟️',-37.8,'Shopping'],[15,'Coffee Co','☕',-5.4,'Food'],[15,'Cafe Brandon','☕',-3.75,'Food'],[14,' Instapark via Tikkie Zakelijk','🅿️',-2.02,'Transport'],[14,'CityPay Transit','🚆',-2.35,'Transport'],[14,'FuelUp','⛽',-50,'Fuel'],
-[13,'Friend transfer','👤',-50,'Transfers'],[13,'Family transfer','👤',-450,'Transfers'],[12,'Fresh Market','🛒',-6.94,'Groceries'],[12,'Discount Grocer','🛒',-46.19,'Groceries'],[12,'City Parking','🅿️',-25,'Transport'],[12,'Mega Super','🛒',-53.51,'Groceries'],
+[13,'Friend transfer','👤',-50,'Transfers'],[13,'V LOSKUTOVA','👤',-450,'Transfers'],[12,'Fresh Market','🛒',-6.94,'Groceries'],[12,'Discount Grocer','🛒',-46.19,'Groceries'],[12,'City Parking','🅿️',-25,'Transport'],[12,'Mega Super','🛒',-53.51,'Groceries'],
 [11,'Friend transfer','👤',-30,'Transfers'],[11,'Corner Shop','🌙',-34.45,'Food'],[11,'Fresh Market','🛒',-11.65,'Groceries'],[11,'FuelUp','⛽',-13.5,'Fuel'],
 [10,'Vet Clinic','🐾',-137.85,'Health'],[10,'City Council','🏛️',-133.93,'Bills'],[10,'Fitness de Kloek','🏋️',-54.45,'Sport',{
     // Необязательные поля: удалите строку, чтобы использовать прежнюю генерацию.
@@ -121,7 +133,7 @@ R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport',{
     ref:'09/11/2026 20:09:03',             // тестовый референс
     description:'personal funds',     // текст описания
     tag:'ZZP income'                      // начальный тег
-}],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Client payment','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
+}],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Faustinus Chukwuma Onuima UAB','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
 let S,T,id=0;
 const hist=p=>{let h=[],x=p*.94;for(let i=0;i<30;i++){x*=1+(Math.random()-.46)*.02;h.push(+x.toFixed(2))}h[29]=p;return h};
 function init(){id=0;T=R.map(r=>({id:id++,d:new Date(2026,10,r[0]),n:r[1],i:r[2],a:r[3],c:r[4],note:r[5]?.description??'',tag:r[5]?.tag,meta:{...r[5]}}));
