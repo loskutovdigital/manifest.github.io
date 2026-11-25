@@ -201,17 +201,22 @@ const similarView=()=>{const t=T.find(t=>t.id===S.similar);const matches=T.filte
 function render(keep){const scr=$('#scr'),y=scr.scrollTop,t=currentTx(),detail=!!t,similar=!detail&&S.similar!==null;$('header b').textContent=detail?'':similar?'Similar transactions':TT[S.tab];$('#back').style.visibility=detail||similar?'visible':'hidden';$('#sb').style.visibility=S.tab==='ov'&&!detail&&!similar?'visible':'hidden';scr.innerHTML=detail?txview(t):similar?similarView():({ov, in:ins,iv:inv,pr:prd,sv:svc})[S.tab]();scr.scrollTop=keep?y:0;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==S.tab));updateHeader()}
 function updateHeader(){const t=currentTx();if(t)$('header b').textContent=$('#scr').scrollTop>145?t.n:''}
 $('#scr').addEventListener('scroll',updateHeader,{passive:true});
-/* ---------- actions ---------- */
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
-  debugGrid: false, // Поставь true на один запуск, если нужно увидеть сетку координат и поправить отступы
-  coords: {
-    period: { x: 355, y: 722, wipeW: 190, wipeH: 16 },
-    date:   { x: 42,  y: 548, wipeW: 65,  wipeH: 16 },
-    desc:   { x: 115, y: 548, wipeW: 270, wipeH: 75, lineHeight: 12, maxChars: 50 },
-    type:   { x: 395, y: 548, wipeW: 95,  wipeH: 16 },
-    amount: { rightX: 553, y: 548, wipeW: 65, wipeH: 16 }
+  // Пропорции (от 0 до 1 относительно ширины W и высоты H листа)
+  layout: {
+    fontSize:      0.0135, // Размер основного текста (~8 pt на A4)
+    labelSize:     0.0122, // Размер мелкой подписи Period
+    lineHeight:    0.0195, // Межстрочный интервал в Description
+    maxChars:      56,     // Перенос длинных строк до колонки Type
+    periodLabel:   { rightX: 0.934, y: 0.926 },
+    periodValue:   { rightX: 0.934, y: 0.908 },
+    rowTopY:       0.776,  // Верхняя строка таблицы под заголовками
+    dateX:         0.084,  // Колонка Date
+    descX:         0.178,  // Колонка Name / Description / Notification
+    typeX:         0.618,  // Колонка Type
+    amountRightX:  0.934   // Правый край колонки Amount (EUR)
   }
 };
 
@@ -249,9 +254,7 @@ function wrapPdfLines(text, maxChars) {
 async function generateStatementPdf(t) {
   if (!t) return;
   try {
-    if (typeof PDFLib === 'undefined') {
-      return toast('PDF library not loaded');
-    }
+    if (typeof PDFLib === 'undefined') return toast('PDF library not loaded');
     toast('Generating PDF...');
 
     const { PDFDocument, StandardFonts, rgb } = PDFLib;
@@ -268,13 +271,13 @@ async function generateStatementPdf(t) {
       ? t.note
       : ('Secured ' + t.c.toLowerCase() + ' transaction');
 
-    // Собираем блок Description (строго без Value Date)
+    const L = PDF_CONFIG.layout;
     const descLines = [];
     const titleName = (counterparty[0] || t.n || '').trim();
-    if (titleName)       descLines.push(...wrapPdfLines(titleName, PDF_CONFIG.coords.desc.maxChars));
-    if (counterparty[1]) descLines.push(...wrapPdfLines(`IBAN: ${counterparty[1]}`, PDF_CONFIG.coords.desc.maxChars));
-    if (m.ref)           descLines.push(...wrapPdfLines(`Reference: ${m.ref}`, PDF_CONFIG.coords.desc.maxChars));
-    if (rawDesc)         descLines.push(...wrapPdfLines(`Description: ${rawDesc}`, PDF_CONFIG.coords.desc.maxChars));
+    if (titleName)       descLines.push(...wrapPdfLines(titleName, L.maxChars));
+    if (counterparty[1]) descLines.push(...wrapPdfLines(`IBAN: ${counterparty[1]}`, L.maxChars));
+    if (m.ref)           descLines.push(...wrapPdfLines(`Reference: ${m.ref}`, L.maxChars));
+    if (rawDesc)         descLines.push(...wrapPdfLines(`Description: ${rawDesc}`, L.maxChars));
 
     const existingPdfBytes = await fetch(PDF_CONFIG.templateUrl).then(res => {
       if (!res.ok) throw new Error('Template PDF not found');
@@ -283,52 +286,78 @@ async function generateStatementPdf(t) {
 
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const page = pdfDoc.getPages()[0];
+    const crop = page.getCropBox();
+    const W = crop.width;
+    const H = crop.height;
+    const ox = crop.x || 0;
+    const oy = crop.y || 0;
+
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const textColor   = rgb(0.12, 0.12, 0.12);
-    const white       = rgb(1, 1, 1);
+    const textColor   = rgb(0.1, 0.1, 0.1);
 
-    const { period, date, desc, type, amount } = PDF_CONFIG.coords;
+    const fontSize   = W * L.fontSize;
+    const labelSize  = W * L.labelSize;
+    const lineHeight = W * L.lineHeight;
+    const rowY       = oy + H * L.rowTopY;
 
-    // Закрываем старые цифры шаблона белыми прямоугольниками
-    page.drawRectangle({ x: period.x - 2, y: period.y - 4, width: period.wipeW, height: period.wipeH, color: white });
-    page.drawRectangle({ x: date.x - 2,   y: date.y - 4,   width: date.wipeW,   height: date.wipeH,   color: white });
-    page.drawRectangle({ x: desc.x - 2,   y: desc.y - desc.wipeH + 12, width: desc.wipeW, height: desc.wipeH, color: white });
-    page.drawRectangle({ x: type.x - 2,   y: type.y - 4,   width: type.wipeW,   height: type.wipeH,   color: white });
-    page.drawRectangle({ x: amount.rightX - amount.wipeW, y: amount.y - 4, width: amount.wipeW + 4, height: amount.wipeH, color: white });
+    // 1. Блок Period справа сверху (под Account number)
+    const pLabelW = fontRegular.widthOfTextAtSize('Period', labelSize);
+    page.drawText('Period', {
+      x: ox + W * L.periodLabel.rightX - pLabelW,
+      y: oy + H * L.periodLabel.y,
+      size: labelSize,
+      font: fontRegular,
+      color: textColor
+    });
 
-    // Впечатываем новые данные
-    page.drawText(periodStr, { x: period.x, y: period.y, size: 8.5, font: fontRegular, color: textColor });
-    page.drawText(txDateStr, { x: date.x,   y: date.y,   size: 8.5, font: fontRegular, color: textColor });
-    page.drawText(methodStr, { x: type.x,   y: type.y,   size: 8.5, font: fontRegular, color: textColor });
+    const pValW = fontBold.widthOfTextAtSize(periodStr, fontSize);
+    page.drawText(periodStr, {
+      x: ox + W * L.periodValue.rightX - pValW,
+      y: oy + H * L.periodValue.y,
+      size: fontSize,
+      font: fontBold,
+      color: textColor
+    });
 
+    // 2. Колонка Date
+    page.drawText(txDateStr, {
+      x: ox + W * L.dateX,
+      y: rowY,
+      size: fontSize,
+      font: fontRegular,
+      color: textColor
+    });
+
+    // 3. Колонка Name / Description / Notification
     descLines.forEach((line, idx) => {
       page.drawText(line, {
-        x: desc.x,
-        y: desc.y - idx * desc.lineHeight,
-        size: 8.5,
+        x: ox + W * L.descX,
+        y: rowY - idx * lineHeight,
+        size: fontSize,
         font: idx === 0 ? fontBold : fontRegular,
         color: textColor
       });
     });
 
-    const amountWidth = fontRegular.widthOfTextAtSize(amountStr, 8.5);
-    page.drawText(amountStr, {
-      x: amount.rightX - amountWidth,
-      y: amount.y,
-      size: 8.5,
+    // 4. Колонка Type
+    page.drawText(methodStr, {
+      x: ox + W * L.typeX,
+      y: rowY,
+      size: fontSize,
       font: fontRegular,
       color: textColor
     });
 
-    if (PDF_CONFIG.debugGrid) {
-      for (let gx = 0; gx < 600; gx += 50) {
-        page.drawText(String(gx), { x: gx + 2, y: 10, size: 6, font: fontRegular, color: rgb(1, 0, 0) });
-      }
-      for (let gy = 0; gy < 850; gy += 50) {
-        page.drawText(String(gy), { x: 5, y: gy + 2, size: 6, font: fontRegular, color: rgb(1, 0, 0) });
-      }
-    }
+    // 5. Колонка Amount (EUR) с выравниванием по правому краю
+    const amountW = fontRegular.widthOfTextAtSize(amountStr, fontSize);
+    page.drawText(amountStr, {
+      x: ox + W * L.amountRightX - amountW,
+      y: rowY,
+      size: fontSize,
+      font: fontRegular,
+      color: textColor
+    });
 
     const pdfBytes = await pdfDoc.save();
     const blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
@@ -346,6 +375,7 @@ async function generateStatementPdf(t) {
     toast('PDF error: ' + err.message);
   }
 }
+    /* ---------- actions ---------- */
 const A={cl,tab:v=>{S.tab=v;S.detail=null;S.similar=null;cl();render()},srch:()=>{S.sr=!S.sr;S.q='';render(1)},flt:v=>{S.flt=v;render(1)},nocat:()=>{S.cat=null;render(1)},cat:v=>{S.cat=v;S.flt='all';S.tab='ov';S.detail=null;S.similar=null;render()},
 tx:v=>{if(S.detail===null&&S.similar===null)S.listY=$('#scr').scrollTop;S.detail=Number(v);S.tab='ov';render()},
 back:()=>{if(S.detail!==null){S.detail=null;render();if(S.similar===null)$('#scr').scrollTop=S.listY}else if(S.similar!==null){S.detail=S.similar;S.similar=null;render()}},
