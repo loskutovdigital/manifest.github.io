@@ -226,7 +226,7 @@ const PDF_CONFIG = {
     pageBold:     'Page ',
     pageRegular:  '1 of 1'
   },
-  // Координаты и размеры в долях от ширины (W) и высоты (H) листа
+  // Координаты и размеры в долях от ширины (W) и высоты (H) листа A4
   layout: {
     titleSize:     0.0255, // Заголовок "Statement current account"
     helpSize:      0.0148, // Строки "At ING.nl..."
@@ -242,17 +242,17 @@ const PDF_CONFIG = {
     help2:         { rightX: 0.934, y: 0.908 },
 
     // Адрес владельца счёта слева
-    address:       { x: 0.116, y: 0.836, stepY: 0.016 },
+    address:       { x: 0.116, y: 0.838, stepY: 0.016 },
 
-    // Правый блок: Period и Account number
-    periodLabel:   { rightX: 0.934, y: 0.858 },
-    periodValue:   { rightX: 0.934, y: 0.840 },
-    accountLabel:  { rightX: 0.934, y: 0.822 },
-    accountValue:  { rightX: 0.934, y: 0.804 },
+    // Правый блок: Period и Account number (с отступами от серых линий)
+    periodLabel:   { rightX: 0.934, y: 0.857 },
+    periodValue:   { rightX: 0.934, y: 0.842 },
+    accountLabel:  { rightX: 0.934, y: 0.823 },
+    accountValue:  { rightX: 0.934, y: 0.808 },
 
-    // Заголовки колонок таблицы и первая строка транзакции
-    tableHeaderY:  0.688,
-    rowTopY:       0.660,
+    // Заголовки колонок таблицы (ниже оранжевой линии) и первая строка транзакции
+    tableHeaderY:  0.674,
+    rowTopY:       0.646,
     dateX:         0.080,
     descX:         0.175,
     typeX:         0.618,
@@ -337,20 +337,27 @@ async function generateStatementPdf(t) {
       return res.arrayBuffer();
     });
 
-    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    // Создаём чистый документ стандартного физического размера A4 (чтобы открывался в 100% масштабе)
+    const pdfDoc = await PDFDocument.create();
+    const [embeddedTemplate] = await pdfDoc.embedPdf(existingPdfBytes, [0]);
+
+    const W = 595.28; // Стандартная ширина A4 в пунктах (210 мм)
+    const H = W * (embeddedTemplate.height / embeddedTemplate.width); // Пропорциональная высота A4 (~841.89 pt)
+    const page = pdfDoc.addPage([W, H]);
+
+    // Вписываем подложку шаблона ровно в лист A4
+    page.drawPage(embeddedTemplate, {
+      x: 0,
+      y: 0,
+      width: W,
+      height: H
+    });
 
     // Перезаписываем внутренний Title документа (IBAN или Reference + дата и время)
     const targetId    = (counterparty[1] || m.ref || 'Statement').trim();
     const dateTimeStr = [txDateStr, m.time].filter(Boolean).join(' ');
     const docTitle    = `${targetId} - ${dateTimeStr}`;
     pdfDoc.setTitle(docTitle);
-
-    const page = pdfDoc.getPages()[0];
-    const crop = page.getCropBox();
-    const W = crop.width;
-    const H = crop.height;
-    const ox = crop.x || 0;
-    const oy = crop.y || 0;
 
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -367,8 +374,8 @@ async function generateStatementPdf(t) {
     const drawRight = (text, rightRelX, relY, size, font, color = textColor) => {
       const tw = font.widthOfTextAtSize(text, size);
       page.drawText(text, {
-        x: ox + W * rightRelX - tw,
-        y: oy + H * relY,
+        x: W * rightRelX - tw,
+        y: H * relY,
         size,
         font,
         color
@@ -379,15 +386,15 @@ async function generateStatementPdf(t) {
     const wBold = fontBold.widthOfTextAtSize(ST.titleBold, titleSize);
     const wReg  = fontRegular.widthOfTextAtSize(ST.titleRegular, titleSize);
     page.drawText(ST.titleRegular, {
-      x: ox + W * L.headerTitle.rightX - wBold - wReg,
-      y: oy + H * L.headerTitle.y,
+      x: W * L.headerTitle.rightX - wBold - wReg,
+      y: H * L.headerTitle.y,
       size: titleSize,
       font: fontRegular,
       color: textColor
     });
     page.drawText(ST.titleBold, {
-      x: ox + W * L.headerTitle.rightX - wBold,
-      y: oy + H * L.headerTitle.y,
+      x: W * L.headerTitle.rightX - wBold,
+      y: H * L.headerTitle.y,
       size: titleSize,
       font: fontBold,
       color: textColor
@@ -400,8 +407,8 @@ async function generateStatementPdf(t) {
     const holderName = m.user || ST.holderName;
     [holderName, ST.addressLine1, ST.addressLine2].forEach((line, idx) => {
       page.drawText(line, {
-        x: ox + W * L.address.x,
-        y: oy + H * (L.address.y - idx * L.address.stepY),
+        x: W * L.address.x,
+        y: H * (L.address.y - idx * L.address.stepY),
         size: fontSize,
         font: fontRegular,
         color: textColor
@@ -416,16 +423,16 @@ async function generateStatementPdf(t) {
     drawRight(accountIban,     L.accountValue.rightX, L.accountValue.y, fontSize,  fontBold,    textColor);
 
     // --- 4. ЗАГОЛОВКИ КОЛОНОК ТАБЛИЦЫ ---
-    const thY = oy + H * L.tableHeaderY;
-    page.drawText(ST.colDate, { x: ox + W * L.dateX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
-    page.drawText(ST.colDesc, { x: ox + W * L.descX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
-    page.drawText(ST.colType, { x: ox + W * L.typeX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
+    const thY = H * L.tableHeaderY;
+    page.drawText(ST.colDate, { x: W * L.dateX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
+    page.drawText(ST.colDesc, { x: W * L.descX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
+    page.drawText(ST.colType, { x: W * L.typeX, y: thY, size: labelSize, font: fontRegular, color: mutedColor });
     drawRight(ST.colAmount, L.amountRightX, L.tableHeaderY, labelSize, fontRegular, mutedColor);
 
     // --- 5. ДАННЫЕ ТРАНЗАКЦИИ ---
-    const rowY = oy + H * L.rowTopY;
+    const rowY = H * L.rowTopY;
     page.drawText(txDateStr, {
-      x: ox + W * L.dateX,
+      x: W * L.dateX,
       y: rowY,
       size: fontSize,
       font: fontRegular,
@@ -434,7 +441,7 @@ async function generateStatementPdf(t) {
 
     descLines.forEach((line, idx) => {
       page.drawText(line, {
-        x: ox + W * L.descX,
+        x: W * L.descX,
         y: rowY - idx * lineHeight,
         size: fontSize,
         font: idx === 0 ? fontBold : fontRegular,
@@ -443,27 +450,28 @@ async function generateStatementPdf(t) {
     });
 
     page.drawText(methodStr, {
-      x: ox + W * L.typeX,
+      x: W * L.typeX,
       y: rowY,
       size: fontSize,
       font: fontRegular,
       color: textColor
     });
 
-    drawRight(amountStr, L.amountRightX, L.rowTopY, fontSize, fontRegular, textColor);
+    // Сумма жирным шрифтом
+    drawRight(amountStr, L.amountRightX, L.rowTopY, fontSize, fontBold, textColor);
 
     // --- 6. НИЖНИЙ ФУТЕР ПОД ОРАНЖЕВОЙ ЛИНИЕЙ ---
     page.drawText(ST.footerLine1, {
-      x: ox + W * L.footerLeftX,
-      y: oy + H * L.footerLine1Y,
+      x: W * L.footerLeftX,
+      y: H * L.footerLine1Y,
       size: footerSize,
       font: fontRegular,
       color: textColor
     });
 
     page.drawText(ST.footerLine2, {
-      x: ox + W * L.footerLeftX,
-      y: oy + H * L.footerLine2Y,
+      x: W * L.footerLeftX,
+      y: H * L.footerLine2Y,
       size: footerSize,
       font: fontRegular,
       color: textColor
@@ -472,15 +480,15 @@ async function generateStatementPdf(t) {
     const pNumW  = fontRegular.widthOfTextAtSize(ST.pageRegular, footerSize);
     const pWordW = fontBold.widthOfTextAtSize(ST.pageBold, footerSize);
     page.drawText(ST.pageBold, {
-      x: ox + W * L.footerRightX - pNumW - pWordW,
-      y: oy + H * L.footerLine1Y,
+      x: W * L.footerRightX - pNumW - pWordW,
+      y: H * L.footerLine1Y,
       size: footerSize,
       font: fontBold,
       color: textColor
     });
     page.drawText(ST.pageRegular, {
-      x: ox + W * L.footerRightX - pNumW,
-      y: oy + H * L.footerLine1Y,
+      x: W * L.footerRightX - pNumW,
+      y: H * L.footerLine1Y,
       size: footerSize,
       font: fontRegular,
       color: textColor
