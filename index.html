@@ -1,8 +1,8 @@
 <!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Wallet – login and overview</title>
 <style>
-:root{--bg:#f2f2f5;--cd:#fff;--tx:#111;--mu:#7b7b86;--ac:#ff6200;--ln:#e0e0e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d0d0d;--cd:#1c1c1e;--tx:#f5f5f7;--mu:#98989f;--ln:#2c2c2e;color-scheme:dark}}
-:root[data-theme=dark]{--bg:#0d0d0d;--cd:#1c1c1e;--tx:#f5f5f7;--mu:#98989f;--ln:#2c2c2e;color-scheme:dark}
+:root{--bg:#f2f2f5;--cd:#fff;--cd2:#f7f7fa;--tx:#111;--mu:#7b7b86;--ac:#ff6200;--ln:#e0e0e6;--gn:#1f8b4c;--gbg:#e6f6ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d0d0d;--cd:#1c1c1e;--cd2:#252528;--tx:#f5f5f7;--mu:#98989f;--ln:#2c2c2e;--gn:#4cd964;--gbg:#143822;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0d0d0d;--cd:#1c1c1e;--cd2:#252528;--tx:#f5f5f7;--mu:#98989f;--ln:#2c2c2e;--gn:#4cd964;--gbg:#143822;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}*{-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}
 #app{max-width:430px;margin:0 auto;height:100%;position:relative;overflow:hidden;background:var(--bg)}
@@ -21,16 +21,26 @@ body{background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSy
 .pill{margin:auto 0 28px;border:2px solid var(--tx);border-radius:99px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:600;background:none;color:var(--tx);cursor:pointer}
 #skl{padding:24px;opacity:.35}.sb{background:var(--cd);border-radius:8px;height:32px;margin:0 0 14px;animation:pl 1.2s infinite alternate}@keyframes pl{to{opacity:.4}}
 #ld .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000a}#ld .dt{margin:36px 0 0}
-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;font-weight:700;font-size:17px;letter-spacing:-0.2px}header div{display:flex;gap:8px}
+
+/* Header & Tab Panes */
+header{display:grid;grid-template-columns:88px 1fr 88px;align-items:center;padding:10px 16px;font-weight:700;font-size:17px;letter-spacing:-0.2px}
+header .h-l{display:flex;justify-content:flex-start}
+header .h-t{text-align:center}
+header .h-r{display:flex;justify-content:flex-end;gap:8px}
 .rd{position:absolute;top:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#ff453a}
 .sr{margin:4px 16px 8px;background:var(--cd);border-radius:16px;padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:15px}.sr input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--tx);font-family:inherit;font-size:15px}
-#sc{flex:1;overflow-y:auto;padding:0 16px 120px}
-.acts{display:flex;justify-content:space-around;margin:16px 0 6px}.ac{text-align:center;font-size:13px;font-weight:500;cursor:pointer;width:25%}
+.tab-pane{flex:1;overflow-y:auto;padding:0 16px 120px;display:none}.tab-pane.on{display:block}
+.tab-pane .sr{margin:4px 0 10px}
+
+/* Preserved Overview & Shared Styles */
+.acts{display:flex;justify-content:space-around;margin:16px 0 6px;gap:4px}.ac{text-align:center;font-size:13px;font-weight:500;cursor:pointer;flex:1;line-height:1.25}
 .ac b{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;margin:0 auto 7px;background:var(--cd);font-size:20px;font-weight:400}.ac b.w{background:var(--tx);color:var(--bg)}
 .hd{display:flex;justify-content:space-between;align-items:center;margin:24px 0 8px}.hd h2{margin:0;color:var(--ac);font-size:21px;font-weight:700;letter-spacing:-0.3px}
+.sub-or{color:var(--ac);font-size:17px;font-weight:700;margin:22px 0 10px;display:flex;justify-content:space-between;align-items:center}
 .pl{width:38px;height:38px;border-radius:50%;background:var(--cd);border:0;color:var(--tx);font-size:22px;cursor:pointer;display:grid;place-items:center}
 h1{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin:28px 0 12px}
-.ar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;color:inherit;text-decoration:none;cursor:pointer}.ar b{font-size:16px;font-weight:600;display:block;margin-bottom:2px}.ar div div{font-size:13.5px;color:var(--mu)}.ar .am{font-weight:700;font-size:16px;white-space:nowrap}.ar:active{opacity:.6}.mu{color:var(--mu)}
+.sub-p{font-size:14px;color:var(--mu);margin:-6px 0 14px}
+.ar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;color:inherit;text-decoration:none;cursor:pointer}.ar b{font-size:16px;font-weight:600;display:block;margin-bottom:2px}.ar div div{font-size:13.5px;color:var(--mu)}.ar .am{font-weight:700;font-size:16px;white-space:nowrap}.ar:active,.card-tap:active{opacity:.6}.mu{color:var(--mu)}
 .pc{display:flex;gap:14px;align-items:center;background:var(--cd);border-radius:20px;padding:14px;cursor:pointer}.pc div:nth-child(2){flex:1}.pc b{font-size:16px;font-weight:600;display:block;margin-bottom:2px}.pc div div{font-size:13.5px;color:var(--mu)}
 .go{width:68px;height:68px;border-radius:14px;background:linear-gradient(160deg,#efe9e1 45%,#ff6200 45%);display:grid;place-items:center;flex:none}.go i{transform:rotate(25deg);color:#fff;font-weight:800;font-size:17px;margin-top:12px}
 .bl{background:#1a5c80;border-radius:22px;padding:18px 20px;margin:22px 0 0;color:#fff}.bl .t{display:flex;justify-content:space-between;font-weight:700;font-size:17px;letter-spacing:-0.2px;margin-bottom:14px}
@@ -42,52 +52,808 @@ h1{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin:28px 0 12px}
 .pr{border-radius:22px;overflow:hidden;background:#ff6200;margin:26px 0 0}.pi{height:160px;background:linear-gradient(135deg,#6b5238,#d9b98a);display:grid;place-items:center;font-size:64px}
 .pb{padding:18px 20px 24px;color:#fff}.pb h3{font-size:22px;line-height:1.2;letter-spacing:-0.3px;margin:0 0 10px;font-weight:700;display:flex;justify-content:space-between;gap:10px}.pb p{font-size:15px;line-height:1.4;margin:0 0 18px;opacity:.95}
 .wb{background:#fff;color:#111;border:0;border-radius:99px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer}
+
+/* Additional Components for Insight, Investments, Products, Service */
+.sm-pill{background:var(--cd);border:0;color:var(--tx);border-radius:99px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.out-pill{background:none;border:1.5px solid var(--tx);color:var(--tx);border-radius:99px;padding:9px 18px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.box-card{border:1px solid var(--ln);border-radius:16px;padding:14px 16px;margin:8px 0 14px;background:transparent}
+.fill-card{background:var(--cd);border-radius:18px;padding:14px 16px;margin:10px 0;cursor:pointer}
+.or-badge{display:inline-block;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:2px 8px;border-radius:6px;margin-top:3px}
+.ic-or{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--ac);color:var(--ac);display:grid;place-items:center;font-size:14px;flex:none}
+.chart-box{margin-top:12px;background:var(--cd);border-radius:18px;padding:14px}
+.cat-bar{height:8px;border-radius:99px;background:var(--ln);overflow:hidden;margin-top:6px}.cat-bar i{display:block;height:100%;background:var(--ac);border-radius:99px}
+
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.chip{background:var(--cd);border:1px solid transparent;color:var(--tx);border-radius:10px;padding:8px 13px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--tx);color:var(--bg)}
+.pill-chip{background:none;border:1.5px solid var(--ln);color:var(--tx);border-radius:99px;padding:7px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.pill-chip.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.yield-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin:16px 0}
+.yield-grid b{display:block;font-size:16px;margin-top:4px}
+.h-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.h-scroll::-webkit-scrollbar{display:none}
+.art-card{min-width:230px;max-width:230px;background:var(--cd);border-radius:18px;overflow:hidden;cursor:pointer;flex:none}
+.art-img{height:125px;display:grid;place-items:center;font-size:44px}
+.tour-card{min-width:116px;cursor:pointer;flex:none}
+.tour-sq{height:104px;border-radius:16px;background:var(--cd);display:grid;place-items:center;font-size:34px;margin-bottom:8px}
+.insp-card{min-width:128px;max-width:128px;cursor:pointer;flex:none}
+.insp-sq{height:112px;border-radius:16px;background:#1a5c80;display:grid;place-items:center;font-size:38px;margin-bottom:8px}
+.inv-row{display:flex;align-items:center;gap:14px;background:var(--cd);border-radius:18px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.inv-ico{width:42px;height:42px;border-radius:12px;background:var(--cd2);display:grid;place-items:center;font-size:22px;flex:none}
+.mkt-dn{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--ac)}
+.faces{display:flex;justify-content:space-around;margin:14px 0 8px}
+.face-btn{width:44px;height:44px;border-radius:50%;border:2px solid var(--ac);background:none;color:var(--ac);font-size:20px;cursor:pointer;display:grid;place-items:center}.face-btn.on{background:var(--ac);color:#fff}
+
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qa-card{background:var(--cd);border-radius:18px;padding:16px;min-height:116px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
+.qa-card .qi{font-size:24px;color:var(--ac)}
+.qa-card .qt{font-size:14.5px;font-weight:600;display:flex;justify-content:space-between;align-items:flex-end;gap:6px;line-height:1.25}
+.cat-sq{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:22px;flex:none}
+.bdg-offer{background:#4b2e83;color:#e5d9ff;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px}
+.bdg-new{background:#5c3419;color:#ffd8bd;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px}
+.thumb-sq{width:54px;height:54px;border-radius:14px;background:var(--cd);display:grid;place-items:center;font-size:26px;flex:none}
+
+.prof-top{text-align:center;padding:8px 0 6px}
+.prof-av{width:64px;height:64px;border-radius:16px;margin:0 auto 10px;background:linear-gradient(135deg,#2c2c30,#ff6200);color:#fff;font-weight:800;font-size:22px;display:grid;place-items:center;overflow:hidden;border:2px solid var(--ln)}
+.prof-name{color:var(--ac);font-size:22px;font-weight:700;letter-spacing:-0.3px}
+.srv-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;cursor:pointer}
+.srv-l{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.srv-ico{width:28px;text-align:center;font-size:19px;color:var(--ac);flex:none}
+.online-pill{background:var(--gbg);color:var(--gn);font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px}
+.agents{display:flex;margin-top:10px}.agents span{width:30px;height:30px;border-radius:50%;background:var(--cd2);border:2px solid var(--bg);display:grid;place-items:center;font-size:14px;margin-left:-6px}.agents span:first-child{margin-left:0}
+
+/* Navigation, Modal Sheet & Toast */
 nav{position:absolute;left:10px;right:10px;bottom:10px;display:flex;background:var(--cd);border:1px solid var(--ln);border-radius:30px;padding:4px;z-index:3}
-nav button{flex:1;border:0;background:none;color:var(--mu);font-family:inherit;font-size:11px;font-weight:500;padding:6px 0;border-radius:24px;cursor:pointer}nav button span{display:block;font-size:19px;margin-bottom:1px}nav button.on{background:var(--bg);color:var(--tx);font-weight:600}
+nav button{flex:1;border:0;background:none;color:var(--mu);font-family:inherit;font-size:11px;font-weight:500;padding:6px 0;border-radius:24px;cursor:pointer}nav button span{display:block;font-size:19px;margin-bottom:1px}nav button.on{background:var(--bg);color:var(--ac);font-weight:600}
 .sh{position:absolute;inset:0;display:none;z-index:5}.sh.on{display:block}.bd{position:absolute;inset:0;background:#0009}
-.pn{position:absolute;left:0;right:0;bottom:0;background:var(--cd);border-radius:24px 24px 0 0;padding:20px 18px 30px}.pn h3{font-size:18px;font-weight:700}.pn input{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font-family:inherit;font-size:15px;margin:6px 0;box-sizing:border-box}.pn input[type=range]{padding:0;accent-color:var(--ac)}
+.pn{position:absolute;left:0;right:0;bottom:0;max-height:82%;overflow-y:auto;background:var(--cd);border-radius:24px 24px 0 0;padding:18px 18px 30px}
+.pn-bar{width:38px;height:4px;border-radius:99px;background:var(--ln);margin:0 auto 14px}
+.pn h3{font-size:18px;font-weight:700;margin:0 0 6px}
+.pn input,.pn select,.pn textarea{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font-family:inherit;font-size:15px;margin:6px 0;box-sizing:border-box}
+.pn input[type=range]{padding:0;accent-color:var(--ac)}
+.btn-or{width:100%;background:var(--ac);color:#fff;border:0;border-radius:99px;padding:13px 20px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--ln);font-size:14.5px}.kv:last-child{border-bottom:0}
+.chat-box{background:var(--bg);border-radius:14px;padding:12px;max-height:210px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.msg-b{background:var(--cd2);padding:9px 12px;border-radius:14px 14px 14px 4px;font-size:14px;max-width:85%}
+.msg-u{background:var(--ac);color:#fff;padding:9px 12px;border-radius:14px 14px 4px 14px;font-size:14px;align-self:flex-end;max-width:85%}
 #ts{position:absolute;left:50%;top:64px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:99px;opacity:0;transition:.3s;z-index:9;pointer-events:none;font-size:13.5px;font-weight:500;max-width:90%;text-align:center}#ts.on{opacity:1}
 </style></head><body>
 <div id="app">
+<!-- 1. SPLASH -->
 <div class="s on" id="sp"><div class="lg"><img src="./wallet-icon.png" alt=""></div></div>
+
+<!-- 2. PIN LOCK -->
 <div class="s" id="lk"><button class="ib" id="inf" data-a="hint">ⓘ</button><div class="lg"><img src="./wallet-icon.png" alt=""></div><div class="dt" id="dt"><i></i><i></i><i></i><i></i><i></i></div><div class="kp" id="kp"></div><button class="pill" data-a="chk">Support calling? Check it now</button></div>
+
+<!-- 3. LOADING -->
 <div class="s" id="ld"><div id="skl"></div><div class="c"><div class="lg"><img src="./wallet-icon.png" alt=""></div><div class="dt"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div></div></div>
+
+<!-- 4. MAIN APP -->
 <div class="s" id="hm">
-<header><button class="ib" data-a="soon">🎚️</button>Overview<div><button class="ib" data-a="bell">🔔<span class="rd"></span></button><button class="ib" data-a="soon">⇄</button></div></header>
+<header>
+  <div class="h-l"><button class="ib" id="hdr-left" data-a="filter">🎚️</button></div>
+  <div class="h-t" id="hdr-title">Overview</div>
+  <div class="h-r"><button class="ib" data-a="bell">🔔<span class="rd"></span></button><button class="ib" data-a="switchAcc">⇄</button></div>
+</header>
+
+<!-- TAB 1: OVERVIEW (Твой оригинальный блок со всеми твоими правками) -->
+<div class="tab-pane on" id="tab-overview">
 <div class="sr">🔍<input id="q" placeholder="Type here what you want to find"></div>
 <div id="sc">
 <div class="acts">
-<div class="ac" data-a="soon"><b class="w">↑</b>Transfer</div><div class="ac" data-a="soon"><b class="w">↓</b>Request</div><div class="ac" data-a="soon"><b>▦</b>Scanner</div><div class="ac" data-a="soon"><b>📅</b>Orders</div></div>
-<div class="sec"><div class="hd"><h2>Current account</h2><button class="pl" data-a="soon">+</button></div>
-<a class="ar" href="./account.html"><div><b>Hr I Loskutov</b><div>NL17 INGB 0115 3363 03</div></div><span class="am">2.480,60 €</span></a></div>
-<div class="sec"><h1>Your plan</h1><div class="pc" data-a="soon"><div class="go"><i>Go</i></div><div><b>ING Go</b><div>Hr I Loskutov</div><div>NL17 INGB 0115 3363 03</div></div><span class="mu" style="font-size:24px">›</span></div></div>
+<div class="ac" data-a="transfer"><b class="w">↑</b>Transfer</div><div class="ac" data-a="request"><b class="w">↓</b>Request</div><div class="ac" data-a="scanner"><b>▦</b>Scanner</div><div class="ac" data-a="orders"><b>📅</b>Orders</div></div>
+<div class="sec"><div class="hd"><h2>Current account</h2><button class="pl" data-a="newAcc">+</button></div>
+<a class="ar" href="./account.html"><div><b id="ov-holder">Hr I Loskutov</b><div id="ov-iban">NL17 INGB 0115 3363 03</div></div><span class="am" id="ov-bal">2.480,60 €</span></a></div>
+<div class="sec"><h1>Your plan</h1><div class="pc" data-a="plan"><div class="go"><i>Go</i></div><div><b>ING Go</b><div id="ov-plan-holder">Hr I Loskutov</div><div id="ov-plan-iban">NL17 INGB 0115 3363 03</div></div><span class="mu" style="font-size:24px">›</span></div></div>
 <div class="sec"><div class="bl"><div class="t">Your money loses value<span>•••</span></div><div class="b"><div>Calculate the impact of inflation.<br><button class="ol" data-a="calc">Calculate the effect</button></div><span>🧮</span></div></div></div>
-<div class="sec"><div class="hd"><h2>Savings account</h2><button class="pl" data-a="soon">+</button></div><div class="ar" data-a="soon"><div><b>Orange Savings</b><div>🔗 Hr I Loskutov</div></div><span class="am">0,00 €</span></div></div>
-<div class="sec"><h1>Your cards</h1><div class="g2"><div class="ct" data-a="soon"><div class="cc" style="background:#ff6200">👛</div>Debit cards</div><div class="ct" data-a="soon"><div class="cc" style="background:#6e1531">👛</div>Credit cards</div></div></div>
-<div class="sec"><div class="hd"><h2>Credit card</h2><button class="pl" data-a="soon">+</button></div><div class="ar cc-row" data-a="soon"><div class="mc"></div><div><div class="cc-title">Credit Card Extra</div><div class="cc-holder">Hr I Loskutov</div><div class="cc-num">card no. 5000 **** **** 0898</div></div></div></div>
-<div class="sec"><div class="hd"><h2>Points</h2></div><div class="ar" data-a="soon"><div><b>Wallet Points</b><div>LOY0 0000 0000 0</div></div><span class="am">7 600 Points</span></div></div>
-<div class="sec"><div class="pr"><div class="pi">🍳🥑🍎</div><div class="pb"><h3>Managing your money together? Keep it simple<span>•••</span></h3><p>Living together requires clarity. With a joint account, you can pay together without keeping track of who paid for what.</p><button class="wb" data-a="soon">View joint account</button></div></div></div>
+<div class="sec"><div class="hd"><h2>Savings account</h2><button class="pl" data-a="savings">+</button></div><div class="ar" data-a="savings"><div><b>Orange Savings</b><div>🔗 Hr I Loskutov</div></div><span class="am">0,00 €</span></div></div>
+<div class="sec"><h1>Your cards</h1><div class="g2"><div class="ct" data-a="cards"><div class="cc" style="background:#ff6200">👛</div>Debit cards</div><div class="ct" data-a="cards"><div class="cc" style="background:#6e1531">👛</div>Credit cards</div></div></div>
+<div class="sec"><div class="hd"><h2>Credit card</h2><button class="pl" data-a="cards">+</button></div><div class="ar cc-row" data-a="cards"><div class="mc"></div><div><div class="cc-title">Credit Card Extra</div><div class="cc-holder">Hr I Loskutov</div><div class="cc-num">card no. 5000 **** **** 0898</div></div></div></div>
+<div class="sec"><div class="hd"><h2>Points</h2></div><div class="ar" data-a="points"><div><b>Wallet Points</b><div>LOY0 0000 0000 0</div></div><span class="am">7 600 Points</span></div></div>
+<div class="sec"><div class="pr"><div class="pi">🍳🥑🍎</div><div class="pb"><h3>Managing your money together? Keep it simple<span>•••</span></h3><p>Living together requires clarity. With a joint account, you can pay together without keeping track of who paid for what.</p><button class="wb" data-a="joint">View joint account</button></div></div></div>
 </div>
-<nav><button class="on"><span>👛</span>Overview</button><button data-a="soon"><span>💡</span>Insight</button><button data-a="soon"><span>📈</span>Investments</button><button data-a="soon"><span>🧺</span>Products</button><button data-a="soon"><span>👤</span>Service</button></nav>
 </div>
-<div class="sh" id="sh"><div class="bd" data-a="cl"></div><div class="pn"><h3 style="margin:0 0 6px">Inflation impact</h3><div class="mu" style="font-size:13.5px">Assumed inflation: 2,5% per year</div><input id="ca" type="number" value="10000" data-i="1"><div style="font-size:14px;margin-top:6px">Years: <b id="cy2">10</b></div><input id="cy" type="range" min="1" max="30" value="10" data-i="1"><p style="font-size:14.5px">In <b id="cy3">10</b> years, this money buys what <b id="cr" style="color:var(--ac)"></b> buys today.</p><div class="mu" style="font-size:13.5px">Value lost: <span id="cl"></span></div></div></div>
+
+<!-- TAB 2: INSIGHT -->
+<div class="tab-pane" id="tab-insight">
+  <div class="box-card card-tap" data-a="switchAcc">
+    <b style="font-size:15.5px" id="ins-holder">Hr I Loskutov</b>
+    <div class="mu" style="font-size:13.5px;margin-top:2px" id="ins-iban">NL17 INGB 0115 3363 03</div>
+  </div>
+  <div class="acts">
+    <div class="ac" data-a="insCat"><b>▦</b>Show<br>categories</div>
+    <div class="ac" data-a="insAhead"><b>🔭</b>Look Ahead</div>
+    <div class="ac" data-a="insSav"><b>🐷</b>Savings<br>activity</div>
+    <div class="ac" data-a="benefits"><b>🧾</b>Benefits<br>Check</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 6px">
+    <b style="font-size:14.5px" id="ins-period">1 November - 30 November</b>
+    <button class="sm-pill" data-a="insPeriod">Change period</button>
+  </div>
+
+  <h1>Your month</h1>
+  <div class="sub-or">Monthly budget</div>
+  <div style="display:flex;align-items:center;gap:14px;margin:10px 0">
+    <div style="width:52px;height:52px;border-radius:14px;background:var(--cd);display:grid;place-items:center;font-size:28px">👛</div>
+    <div>
+      <div class="mu" style="font-size:13.5px">Your budget</div>
+      <span class="or-badge" id="ins-budget">-5,37 €</span>
+    </div>
+  </div>
+  <p class="mu" style="font-size:13.5px;margin:8px 0 12px" id="ins-budget-note">We didn't detect recurring income, therefore your budget is negative.</p>
+  <div class="ar" data-a="insRec">
+    <div style="display:flex;align-items:center;gap:12px"><span class="ic-or">€←</span><b>Recurring income</b></div>
+    <span class="am" id="ins-rec-in">0,00 €</span>
+  </div>
+  <div class="ar" data-a="insRec">
+    <div style="display:flex;align-items:center;gap:12px"><span class="ic-or">€→</span><b>Recurring expenses</b></div>
+    <span class="am" id="ins-rec-out">-5,37 €</span>
+  </div>
+
+  <div class="sub-or"><span>In &amp; Out</span><button class="ib" style="width:28px;height:28px;font-size:13px" data-a="insInfo">ⓘ</button></div>
+  <div class="ar" data-a="insInOut">
+    <div style="display:flex;align-items:center;gap:12px"><span class="ic-or">€←</span><b>In</b></div>
+    <span class="am" id="ins-in">+1 647,80 €</span>
+  </div>
+  <div class="ar" data-a="insInOut">
+    <div style="display:flex;align-items:center;gap:12px"><span class="ic-or">€→</span><b>Out</b></div>
+    <span class="am" id="ins-out">-1 696,67 €</span>
+  </div>
+  <div class="ar" data-a="savings">
+    <div style="display:flex;align-items:center;gap:12px"><span class="ic-or">🐷</span><b>Total savings</b></div>
+    <span class="am">0,00 €</span>
+  </div>
+
+  <h1>Your spending</h1>
+  <div class="sub-or">Budgets</div>
+  <div class="box-card" id="box-budgets">
+    <div style="font-weight:700;font-size:15.5px;margin-bottom:6px">ℹ️ Budgets</div>
+    <div class="mu" style="font-size:14px;margin-bottom:14px">Set your monthly budgets and stay on top of your expenses. But first we'll need your permission to categorise transactions.</div>
+    <button class="out-pill" data-a="enableBudgets">Read explanation and turn on</button>
+  </div>
+
+  <div class="sub-or">Top expenses</div>
+  <div class="box-card" id="box-topexp">
+    <div style="font-weight:700;font-size:15.5px;margin-bottom:6px">ℹ️ Where does my money go?</div>
+    <div class="mu" style="font-size:14px;margin-bottom:14px">If you turn on Insight, we will neatly divide incoming and outgoing transactions for you. This will give you Insight!</div>
+    <button class="out-pill" data-a="enableTopExp">Turn on</button>
+  </div>
+
+  <div class="sub-or"><span>Recurring expenses</span><button class="sm-pill" data-a="insRec">View all</button></div>
+  <div class="ar" data-a="insRec">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--cd);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--mu)">Allianz</div>
+      <div><b>Allianz Direct Vers</b><div>Yearly</div></div>
+    </div>
+    <span class="am">-64,38 €</span>
+  </div>
+
+  <div class="sub-or"><span>Balance progression</span><button class="sm-pill" data-a="insProg">See more</button></div>
+  <div><b style="font-size:20px" id="ins-now-bal">0,06 €</b><div class="mu" style="font-size:13px">Now</div></div>
+  <div class="chart-box">
+    <svg viewBox="0 0 320 120" style="width:100%;height:120px;display:block">
+      <line x1="0" y1="15" x2="275" y2="15" stroke="currentColor" stroke-opacity=".14"/>
+      <line x1="0" y1="58" x2="275" y2="58" stroke="currentColor" stroke-opacity=".14"/>
+      <line x1="0" y1="100" x2="275" y2="100" stroke="currentColor" stroke-opacity=".24"/>
+      <line x1="238" y1="15" x2="238" y2="100" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+      <polyline fill="none" stroke="#ff6200" stroke-width="2.4" stroke-linejoin="round" points="4,98 72,99 82,22 92,48 110,58 122,86 142,91 162,93 172,99 238,99 275,99"/>
+      <circle cx="238" cy="99" r="4.5" fill="#ff6200"/>
+      <text x="282" y="19" fill="currentColor" opacity=".6" font-size="10">2 000 €</text>
+      <text x="282" y="62" fill="currentColor" opacity=".6" font-size="10">1 000 €</text>
+      <text x="282" y="103" fill="currentColor" opacity=".6" font-size="10">0 €</text>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:12px" class="mu"><span>01/11</span><span>30/11</span></div>
+  </div>
+
+  <div style="text-align:center;margin:28px 0 8px">
+    <b style="font-size:16px">What do you think of this insight into your finances?</b>
+    <div class="mu" style="font-size:13.5px;margin-top:4px">With your feedback we can make this insight even better!</div>
+    <div class="faces">
+      <button class="face-btn" data-a="fb">😡</button>
+      <button class="face-btn" data-a="fb">🙁</button>
+      <button class="face-btn" data-a="fb">😐</button>
+      <button class="face-btn" data-a="fb">🙂</button>
+      <button class="face-btn" data-a="fb">😍</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: INVESTMENTS -->
+<div class="tab-pane" id="tab-investments">
+  <div style="display:flex;justify-content:center;gap:28px;margin:10px 0 16px">
+    <div class="ac" style="flex:none;width:96px" data-a="invExplore"><b class="w">🔍</b>Explore</div>
+    <div class="ac" style="flex:none;width:96px" data-a="invStart"><b>+</b>Start investing</div>
+  </div>
+
+  <div class="bl" style="margin-top:4px">
+    <div class="t">Get up to €200 cashback<span>•••</span></div>
+    <div class="b">
+      <div>When you start investing with Easy Invest! Warning: Investing involves risks and costs. You may lose your investment amount.<br><button class="ol" data-a="invPromo">View promotion</button></div>
+      <span>🎁</span>
+    </div>
+  </div>
+
+  <h1>Why you should consider investing</h1>
+  <div class="sub-p">See what your investments could yield</div>
+  <b style="font-size:15px">How much do you want to invest per month?</b>
+  <div class="chip-row" id="inv-amounts">
+    <button class="chip" data-inv-amt="50">50 €</button>
+    <button class="chip on" data-inv-amt="100">✓ 100 €</button>
+    <button class="chip" data-inv-amt="200">200 €</button>
+    <button class="chip" data-inv-amt="300">300 €</button>
+    <button class="chip" data-inv-amt="500">500 €</button>
+  </div>
+  <b style="font-size:15px">What this investment could yield in 10 years</b>
+  <p class="mu" style="font-size:13.5px;margin:6px 0 10px">Your total deposit is <span id="inv-dep">12 000 €</span>. If you choose a neutral strategy, these are your returns:</p>
+  <div class="yield-grid">
+    <div><div style="font-size:24px">🌧️</div><span class="mu" style="font-size:13px">Negative</span><b id="inv-neg">+418 €</b></div>
+    <div><div style="font-size:24px">⛅</div><span class="mu" style="font-size:13px">Average</span><b id="inv-avg">+3 372 €</b></div>
+    <div><div style="font-size:24px">☀️</div><span class="mu" style="font-size:13px">Positive</span><b id="inv-pos">+6 928 €</b></div>
+  </div>
+  <p class="mu" style="font-size:13px;margin:8px 0 14px">The value of your investment may fluctuate. Past results are no guarantee for the future.</p>
+  <button class="wb" style="background:var(--tx);color:var(--bg)" data-a="invFullCalc">Do a full calculation</button>
+
+  <div class="sub-or"><span>Everything about investing</span><button class="sm-pill" data-a="invArticles">View all</button></div>
+  <div class="sub-p">These tips and insights will help you get started</div>
+  <div class="h-scroll">
+    <div class="art-card" data-a="art1">
+      <div class="art-img" style="background:linear-gradient(135deg,#1d6fa5,#58b368)">🏔️</div>
+      <div style="padding:14px">
+        <b style="font-size:15.5px;display:block;min-height:42px">How to start investing?</b>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px" class="mu"><span>📄 Reading time: 5 min.</span><span>›</span></div>
+      </div>
+    </div>
+    <div class="art-card" data-a="art2">
+      <div class="art-img" style="background:linear-gradient(135deg,#2a5470,#4c9f70)">🧭</div>
+      <div style="padding:14px">
+        <b style="font-size:15.5px;display:block;min-height:42px">Which investment suits you best?</b>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px" class="mu"><span>📄 Reading time: 4 min.</span><span>›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h1>Do more with your money</h1>
+  <div class="sub-p">Different ways to invest at ING</div>
+  <div class="inv-row" data-a="invProd" data-title="Self Invest"><div class="inv-ico">📈</div><div style="flex:1"><b>Self Invest</b><div class="mu" style="font-size:13.5px">Invest anytime, anywhere with the app. Low fees, great insights in your investments.</div></div><span class="mu">›</span></div>
+  <div class="inv-row" data-a="invProd" data-title="Easy Invest"><div class="inv-ico">🫙</div><div style="flex:1"><b>Easy Invest</b><div class="mu" style="font-size:13.5px">The easiest way to start investing. Never been simpler.</div></div><span class="mu">›</span></div>
+  <div class="inv-row" data-a="invProd" data-title="Pension Investing"><div class="inv-ico">🏖️</div><div style="flex:1"><b>Pension Investing</b><div class="mu" style="font-size:13.5px">Think about your future now. And benefit from potential tax advantages too.</div></div><span class="mu">›</span></div>
+  <div class="inv-row" data-a="invProd" data-title="Round Up & Invest"><div class="inv-ico">🪙</div><div style="flex:1"><b>Round Up &amp; Invest</b><div class="mu" style="font-size:13.5px">Invest while you pay.</div></div><span class="mu">›</span></div>
+  <div class="inv-row" data-a="invProd" data-title="Investing for your child"><div class="inv-ico">🎈</div><div style="flex:1"><b>Investing for your child</b><div class="mu" style="font-size:13.5px">Invest in the name of your child or yourself. Discover the possibilities.</div></div><span class="mu">›</span></div>
+  <div class="inv-row" data-a="invProd" data-title="Portfolio Management"><div class="inv-ico">💼</div><div style="flex:1"><b>Portfolio Management</b><div class="mu" style="font-size:13.5px">Have your assets managed by ING experts.</div></div><span class="mu">›</span></div>
+
+  <div class="sub-or" style="margin-bottom:2px">Different ways to invest at ING</div>
+  <div class="sub-p" style="margin-top:0">Take our tours to find out how they work</div>
+  <div class="h-scroll">
+    <div class="tour-card" data-a="invTour" data-title="Self Invest"><div class="tour-sq">📈</div><b style="font-size:14px">Self Invest</b></div>
+    <div class="tour-card" data-a="invTour" data-title="Easy Invest"><div class="tour-sq">🫙</div><b style="font-size:14px">Easy Invest</b></div>
+    <div class="tour-card" data-a="invTour" data-title="Pension Investing"><div class="tour-sq">🏖️</div><b style="font-size:14px">Pension Investing</b></div>
+    <div class="tour-card" data-a="invTour" data-title="Portfolio Management"><div class="tour-sq">💼</div><b style="font-size:14px">Portfolio Management</b></div>
+  </div>
+
+  <h1>Why invest at ING?</h1>
+  <div class="fill-card" style="padding:0;overflow:hidden">
+    <div style="height:130px;background:linear-gradient(135deg,#2e3b32,#6e8b74);display:grid;place-items:center;font-size:50px">💻🌿</div>
+    <div style="padding:16px">
+      <div style="display:flex;gap:12px;margin-bottom:12px"><span style="color:var(--ac);font-weight:700">✓</span><div><b>More than 475,000 people invest at ING</b><div class="mu" style="font-size:13.5px">Start building your wealth too.</div></div></div>
+      <div style="display:flex;gap:12px;margin-bottom:12px"><span style="color:var(--ac);font-weight:700">✓</span><div><b>Accessible and easy via the ING app</b><div class="mu" style="font-size:13.5px">Always and everywhere insight into your investments and returns.</div></div></div>
+      <div style="display:flex;gap:12px"><span style="color:var(--ac);font-weight:700">✓</span><div><b>Start investing from just €10</b><div class="mu" style="font-size:13.5px">You can start with a small amount and decide how to move forward.</div></div></div>
+    </div>
+  </div>
+
+  <div class="sub-or">Your watchlist</div>
+  <div class="ar" data-a="watchlist">
+    <div style="display:flex;align-items:center;gap:12px"><span style="color:var(--ac);font-size:20px">☆</span><div><b>Watchlist</b><div>Track your favourite instruments</div></div></div>
+    <span class="mu">›</span>
+  </div>
+
+  <div class="sub-or">Find what you are looking for</div>
+  <div class="chip-row">
+    <button class="pill-chip" data-a="invCat" data-cat="Stocks">Stocks</button>
+    <button class="pill-chip" data-a="invCat" data-cat="Trackers">Trackers</button>
+    <button class="pill-chip" data-a="invCat" data-cat="Equity funds">Equity funds</button>
+    <button class="pill-chip" data-a="invCat" data-cat="Bonds">Bonds</button>
+    <button class="pill-chip" data-a="invCat" data-cat="Bond funds">Bond funds</button>
+    <button class="pill-chip" data-a="invCat" data-cat="Mixed funds">Mixed funds</button>
+  </div>
+  <div class="sr" data-a="invExplore" style="cursor:pointer">🔍<span class="mu">Search through 25.000+ instruments</span></div>
+
+  <div class="sub-or"><span>Get inspired</span><button class="sm-pill" data-a="invExplore">Explore more</button></div>
+  <div class="h-scroll">
+    <div class="insp-card" data-a="invProd" data-title="ING Top Selection Funds"><div class="insp-sq">🏆</div><b style="font-size:13.5px">Automatic investing in ING Top Selection Funds</b></div>
+    <div class="insp-card" data-a="invProd" data-title="ING Worldwide Diversified"><div class="insp-sq">🌍</div><b style="font-size:13.5px">ING Worldwide diversified funds</b></div>
+    <div class="insp-card" data-a="invProd" data-title="Sustainable Funds"><div class="insp-sq">🌱</div><b style="font-size:13.5px">Funds with sustainable objectives</b></div>
+  </div>
+
+  <div class="sub-or">Investment news</div>
+  <div class="mu" style="font-size:13px;margin-bottom:6px">Select type</div>
+  <div class="chip-row">
+    <button class="chip on" id="news-latest" data-a="newsFilter" data-type="latest">✓ Latest</button>
+    <button class="chip" id="news-watch" data-a="newsFilter" data-type="watch">Watchlist</button>
+  </div>
+  <div id="news-list">
+    <div class="ar" data-a="newsItem" data-idx="0"><div><b>Payton Planar Magnetics posts strong growth in order backlog</b><div>25 November 2026, 18:43</div></div><span class="mu">›</span></div>
+    <div class="ar" data-a="newsItem" data-idx="1"><div><b>Ascencio celebrates 20th anniversary with record year</b><div>25 November 2026, 18:40</div></div><span class="mu">›</span></div>
+    <div class="ar" data-a="newsItem" data-idx="2"><div><b>DSM-Firmenich settles with European and UK regulators</b><div>25 November 2026, 16:16 · ₪ DSM Firmenich</div></div><span class="mu">›</span></div>
+  </div>
+  <button class="out-pill" style="margin-top:8px" data-a="invNewsAll">View more news</button>
+
+  <div class="sub-or" style="margin-bottom:2px">Top markets</div>
+  <div class="sub-p" style="margin-top:0">View market values and latest price changes</div>
+  <div class="ar" data-a="mktDetail" data-mkt="AEX">
+    <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:18px">🇳🇱</span><div><b>AEX</b><div>30 largest companies on the Amsterdam Stock Exchange</div></div></div>
+    <div style="text-align:right;white-space:nowrap"><b style="font-size:15px">1 063,440</b><div class="mkt-dn">-1,30% ↓</div></div>
+  </div>
+  <div class="ar" data-a="mktDetail" data-mkt="US 500">
+    <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:18px">🇺🇸</span><div><b>US 500</b><div>500 largest publicly listed companies in the United States</div></div></div>
+    <div style="text-align:right;white-space:nowrap"><b style="font-size:15px">7 239,346</b><div class="mkt-dn">-0,29% ↓</div></div>
+  </div>
+  <div class="ar" data-a="mktDetail" data-mkt="Europe 600">
+    <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-size:18px">🇪🇺</span><div><b>Europe 600</b><div>600 largest companies listed across major European stock exchanges</div></div></div>
+    <div style="text-align:right;white-space:nowrap"><b style="font-size:15px">621,484</b><div class="mkt-dn">-1,04% ↓</div></div>
+  </div>
+  <button class="out-pill" style="margin-top:8px" data-a="allMarkets">View all markets</button>
+
+  <div style="text-align:center;margin:28px 0 8px">
+    <b style="font-size:16px">How satisfied are you with your investment overview?</b>
+    <div class="mu" style="font-size:13.5px;margin-top:4px">We'd love to hear your feedback!</div>
+    <div class="faces">
+      <button class="face-btn" data-a="fb">😡</button>
+      <button class="face-btn" data-a="fb">🙁</button>
+      <button class="face-btn" data-a="fb">😐</button>
+      <button class="face-btn" data-a="fb">🙂</button>
+      <button class="face-btn" data-a="fb">😍</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: PRODUCTS -->
+<div class="tab-pane" id="tab-products">
+  <div class="sr">🔍<input id="q-pr" placeholder="Type here what you want to find"></div>
+  <h1>Find what you need</h1>
+  <div class="sub-or">Quick access</div>
+  <div class="qa-grid">
+    <div class="qa-card pr-item" data-a="invProd" data-title="Pension Investing">
+      <div class="qi">🏖️</div>
+      <div class="qt"><span>Limited offer Pension Invest</span><span class="mu">›</span></div>
+    </div>
+    <div class="qa-card pr-item" data-a="mortgageCalc">
+      <div class="qi">🧮</div>
+      <div class="qt"><span>Calculate your maximum mortgage</span><span class="mu">›</span></div>
+    </div>
+    <div class="qa-card pr-item" data-a="inviteFriend">
+      <div class="qi">🎁</div>
+      <div class="qt"><span>€50 for you, up to €200 for your friend</span><span class="mu">›</span></div>
+    </div>
+    <div class="qa-card pr-item" data-a="health2027">
+      <div class="qi">💓</div>
+      <div class="qt"><span>Health insurance 2027</span><span class="mu">›</span></div>
+    </div>
+  </div>
+
+  <div class="sub-or">Browse by category</div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Payments and cards">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#cbe2f6">🪙</div><div><b>Payments and cards</b><div>Get a new product</div></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span class="bdg-offer">Offer</span><span class="mu">›</span></div>
+  </div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Saving">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#f9d5e5">🐷</div><div><b>Saving</b><div>Explore your options</div></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span class="bdg-new">New</span><span class="mu">›</span></div>
+  </div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Investing">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#d4f0dc">🪴</div><div><b>Investing</b><div>Find what works for you</div></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span class="bdg-offer">Offer</span><span class="mu">›</span></div>
+  </div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Mortgage">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#dfd8f7">🏠</div><div><b>Mortgage</b><div>Explore your options</div></div></div>
+    <span class="mu">›</span>
+  </div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Lending">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#fbf0b2">🚙</div><div><b>Lending</b><div>Find what works for you</div></div></div>
+    <span class="mu">›</span>
+  </div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Insurances">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#dcf4d9">☂️</div><div><b>Insurances</b><div>Get a new product</div></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span class="bdg-offer">Offer</span><span class="mu">›</span></div>
+  </div>
+  <div class="ar pr-item" data-a="prodCat" data-cat="Business Banking">
+    <div style="display:flex;align-items:center;gap:14px"><div class="cat-sq" style="background:#f4d6f7">🏢</div><div><b>Business Banking</b><div>Arranged in about 10 minutes</div></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span class="bdg-offer">Offer</span><span class="mu">›</span></div>
+  </div>
+
+  <h1>Do more with ING</h1>
+  <div class="sub-or">Endless possibilities</div>
+  <div class="ar pr-item" data-a="points"><div style="display:flex;align-items:center;gap:14px"><div class="thumb-sq">🎟️</div><div><b>Promotions and rewards</b><div>Everything about your promotions and rewards</div></div></div><span class="mu">›</span></div>
+  <div class="ar pr-item" data-a="benefits"><div style="display:flex;align-items:center;gap:14px"><div class="thumb-sq">🪙</div><div><b>Benefits Check</b><div>Check whether you maybe might be entitled to benefits</div></div></div><span class="mu">›</span></div>
+  <div class="ar pr-item" data-a="donations"><div style="display:flex;align-items:center;gap:14px"><div class="thumb-sq">🤝</div><div><b>Easy Donations</b><div>Want to do an easy one-time donation?</div></div></div><span class="mu">›</span></div>
+  <div class="ar pr-item" data-a="digitalTog"><div style="display:flex;align-items:center;gap:14px"><div class="thumb-sq">📱</div><div><b>Digital Together</b><div>Do you want to get better at digital banking?</div></div></div><span class="mu">›</span></div>
+  <div class="ar pr-item" data-a="coach"><div style="display:flex;align-items:center;gap:14px"><div class="thumb-sq">💬</div><div><b>Insight Conversation</b><div>A good talk about your finances with a Financial Coach?</div></div></div><span class="mu">›</span></div>
+  <div class="ar pr-item" data-a="inviteFriend"><div style="display:flex;align-items:center;gap:14px"><div class="thumb-sq">🥂</div><div><b>Invite your friends</b><div>Invite a friend to ING, get €50 and your friend €200</div></div></div><span class="mu">›</span></div>
+</div>
+
+<!-- TAB 5: SERVICE -->
+<div class="tab-pane" id="tab-service">
+  <div class="prof-top">
+    <div class="prof-av">IL</div>
+    <div class="prof-name" id="srv-name">Illia Loskutov</div>
+    <div class="mu" style="font-size:14px" id="srv-type">Private account</div>
+  </div>
+  <div class="acts">
+    <div class="ac" data-a="plan"><b class="w">📊</b>View your<br>plans</div>
+    <div class="ac" data-a="switchAcc"><b>⇄</b>Switch<br>account</div>
+    <div class="ac" data-a="addAcc"><b>👤+</b>Add existing<br>account</div>
+    <div class="ac" data-a="editProf"><b>✏️</b>Edit</div>
+  </div>
+
+  <div class="sub-or">Additional actions</div>
+  <div class="srv-row" data-a="logout">
+    <div class="srv-l"><span class="srv-ico">🚪</span><b style="font-size:15.5px">Logout</b></div>
+    <span class="mu">›</span>
+  </div>
+
+  <h1>Find what you are looking for</h1>
+  <div class="chip-row">
+    <button class="pill-chip" data-a="annualStmt">Annual statement</button>
+    <button class="pill-chip" data-a="dailyLimit">Digital Daily Limit</button>
+    <button class="pill-chip" data-a="idaChat">Chat with us</button>
+  </div>
+  <div class="sr">🔍<input id="q-sr" placeholder="Type here what you want to find"></div>
+
+  <h1>Arrange it yourself</h1>
+  <div class="srv-row sr-item" data-a="cards"><div class="srv-l"><span class="srv-ico">💳</span><b style="font-size:15.5px">Your cards</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="myDetails"><div class="srv-l"><span class="srv-ico">👤</span><b style="font-size:15.5px">Your details</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="myAccount"><div class="srv-l"><span class="srv-ico">👛</span><b style="font-size:15.5px">Your account</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="accessConf"><div class="srv-l"><span class="srv-ico">🔒</span><b style="font-size:15.5px">Access &amp; confirmation</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="appSettings"><div class="srv-l"><span class="srv-ico">📱</span><b style="font-size:15.5px">Your app settings</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="privacySet"><div class="srv-l"><span class="srv-ico">🛡️</span><b style="font-size:15.5px">Privacy settings</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="commSet"><div class="srv-l"><span class="srv-ico">💬</span><b style="font-size:15.5px">Communication settings</b></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="allOpts"><div class="srv-l"><span class="srv-ico">↗️</span><b style="font-size:15.5px">All options</b></div><span class="mu">›</span></div>
+
+  <h1>Contact</h1>
+  <div style="display:flex;gap:14px;align-items:flex-start;margin:10px 0 14px;cursor:pointer" data-a="idaChat">
+    <span class="srv-ico" style="margin-top:2px">🗨️</span>
+    <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <b style="font-size:15.5px">We're here for you</b>
+        <span class="online-pill">We're online</span>
+      </div>
+      <div class="mu" style="font-size:13.5px;margin-top:4px">Aid and answers to all your questions, Ida the digital assistant of ING and our team are at your disposal.</div>
+      <div class="agents"><span>👩🏼</span><span>👨🏽</span><span>👩🏻</span></div>
+    </div>
+  </div>
+
+  <div class="sub-or">Get in touch</div>
+  <div class="srv-row sr-item" data-a="phones"><div class="srv-l"><span class="srv-ico">🎧</span><div><b style="font-size:15.5px">All phone numbers</b><div class="mu" style="font-size:13.5px">You may have to wait a short while</div></div></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="chk"><div class="srv-l"><span class="srv-ico">📞</span><div><b style="font-size:15.5px">Check the call</b><div class="mu" style="font-size:13.5px">Is it ING on the phone? Check here to confirm</div></div></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="fraud"><div class="srv-l"><span class="srv-ico">🚨</span><div><b style="font-size:15.5px">Reporting fraud</b><div class="mu" style="font-size:13.5px">Something's up with your account or card?</div></div></div><span class="mu">›</span></div>
+  <div class="srv-row sr-item" data-a="complaint"><div class="srv-l"><span class="srv-ico">📝</span><div><b style="font-size:15.5px">File &amp; track official complaints</b><div class="mu" style="font-size:13.5px">Submit a complaint and follow its status</div></div></div><span class="mu">›</span></div>
+
+  <div style="text-align:center;margin:28px 0 8px">
+    <b style="font-size:16px">Do we make you happy, or not really?</b>
+    <div class="mu" style="font-size:13.5px;margin-top:4px">Please rate your experience with our app</div>
+    <div class="faces">
+      <button class="face-btn" data-a="fb">😡</button>
+      <button class="face-btn" data-a="fb">🙁</button>
+      <button class="face-btn" data-a="fb">😐</button>
+      <button class="face-btn" data-a="fb">🙂</button>
+      <button class="face-btn" data-a="fb">😍</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav>
+  <button class="on" data-tab="overview"><span>👛</span>Overview</button>
+  <button data-tab="insight"><span>💡</span>Insight</button>
+  <button data-tab="investments"><span>📈</span>Investments</button>
+  <button data-tab="products"><span>🧺</span>Products</button>
+  <button data-tab="service"><span>👤</span>Service</button>
+</nav>
+</div>
+
+<!-- MODAL SHEET & TOAST -->
+<div class="sh" id="sh"><div class="bd" data-a="cl"></div><div class="pn"><div class="pn-bar"></div><div id="sh-body"></div></div></div>
 <div id="ts"></div></div>
+
 <script>
-const $=s=>document.querySelector(s),fm=n=>n.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2})+' €',
-go=id=>{document.querySelectorAll('.s').forEach(s=>s.classList.toggle('on',s.id==id))},
-toast=m=>{const t=$('#ts');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2400)};
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s),
+fm=n=>n.toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2})+' €',
+fmInt=n=>Math.round(n).toLocaleString('nl-NL')+' €',
+go=id=>{$$('.s').forEach(s=>s.classList.toggle('on',s.id==id))},
+toast=m=>{const t=$('#ts');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2400)},
+openSheet=html=>{$('#sh-body').innerHTML=html;$('#sh').classList.add('on')},
+closeSheet=()=>$('#sh').classList.remove('on');
+
+const STATE={
+  accIdx:0,
+  accounts:[
+    {name:'Illia Loskutov',short:'Hr I Loskutov',type:'Private account',iban:'NL17 INGB 0115 3363 03',bal:2480.60,addr:'Westerweg 60 153, 1445 AD PURMEREND',phone:'+31 6 48 29 10 44',email:'i.loskutov@loskutovdigital.nl'},
+    {name:'Loskutov Digital Solutions',short:'Loskutov Digital Solutions',type:'Business ZZP account',iban:'NL06 INGB 0119 2424 00',bal:6420.90,addr:'Westerweg 60 153, 1445 AD PURMEREND',phone:'+31 6 48 29 10 44',email:'billing@loskutovdigital.nl'}
+  ],
+  periodIdx:0,
+  periods:[
+    {label:'1 November - 30 November',budget:'-5,37 €',recIn:'0,00 €',recOut:'-5,37 €',inAmt:'+1 647,80 €',outAmt:'-1 696,67 €',nowBal:'0,06 €',note:"We didn't detect recurring income, therefore your budget is negative."},
+    {label:'1 October - 31 October',budget:'+1.944,52 €',recIn:'+2.078,90 €',recOut:'-134,38 €',inAmt:'+2.752,32 €',outAmt:'-2.164,45 €',nowBal:'2.480,60 €',note:'Based on your recurring ZZP income from Loskutov Digital Solutions.'},
+    {label:'1 September - 30 September',budget:'+1.420,00 €',recIn:'+1.550,00 €',recOut:'-130,00 €',inAmt:'+1.891,85 €',outAmt:'-684,92 €',nowBal:'1.892,73 €',note:'Positive monthly cashflow across Bills, Transport and Groceries.'}
+  ],
+  dailyLimit:5000,
+  cardFrozen:false,
+  watchlist:['ASML Holding','ING Groep N.V.','VanEck AEX UCITS ETF'],
+  news:[
+    {title:'Payton Planar Magnetics posts strong growth in order backlog',time:'25 November 2026, 18:43',tag:'Energy & Tech',watch:false,body:'Payton Planar Magnetics reported a 24% year-on-year increase in order backlog driven by European power electronics and EV infrastructure demand.'},
+    {title:'Ascencio celebrates 20th anniversary with record year',time:'25 November 2026, 18:40',tag:'Real Estate',watch:true,body:'Commercial real estate investor Ascencio closed its 20th fiscal year with 98.4% occupancy across Benelux retail parks and raised its annual dividend.'},
+    {title:'DSM-Firmenich settles with European and UK regulators',time:'25 November 2026, 16:16 · ₪ DSM Firmenich',tag:'AEX · Consumer',watch:true,body:'DSM-Firmenich reached a final administrative settlement with EU and UK competition authorities without material impact on 2026 EBITDA guidance.'}
+  ]
+};
+
+function syncAccountUI(){
+  const a=STATE.accounts[STATE.accIdx];
+  $('#ov-holder').textContent=a.short;
+  $('#ov-iban').textContent=a.iban;
+  $('#ov-bal').textContent=fm(a.bal);
+  $('#ov-plan-holder').textContent=a.short;
+  $('#ov-plan-iban').textContent=a.iban;
+  $('#ins-holder').textContent=a.short;
+  $('#ins-iban').textContent=a.iban;
+  $('#srv-name').textContent=a.name;
+  $('#srv-type').textContent=a.type;
+}
+
+/* PIN & Keypad */
 let pin='';const L={2:'ABC',3:'DEF',4:'GHI',5:'JKL',6:'MNO',7:'PQRS',8:'TUV',9:'WXYZ'};
 $('#kp').innerHTML=[1,2,3,4,5,6,7,8,9,'f',0,'b'].map(k=>`<button class="k" data-k="${k}">${k=='f'?'🙂':k=='b'?'⌫':k+'<small>'+(L[k]||'')+'</small>'}</button>`).join('');
-const dots=()=>document.querySelectorAll('#dt i').forEach((d,i)=>d.classList.toggle('f',i<pin.length)),
+const dots=()=>$$('#dt i').forEach((d,i)=>d.classList.toggle('f',i<pin.length)),
 fin=()=>setTimeout(()=>{go('ld');setTimeout(()=>go('hm'),1400)},350);
 function key(k){if(k=='f'){pin='35046';dots();toast('Face recognised');return fin()}
 if(k=='b')pin=pin.slice(0,-1);else if(pin.length<5)pin+=k;dots();
 if(pin.length==5){if(pin=='35046')fin();else{const d=$('#dt');d.classList.add('sk');toast('Wrong PIN. Demo PIN is 35046');setTimeout(()=>{d.classList.remove('sk');pin='';dots()},450)}}}
-const A={hint:()=>toast('Demo PIN: 35046 (or tap the face icon)'),chk:()=>toast('Demo: caller verification screen'),soon:()=>toast('Placeholder here. Open Current account for the full demo'),bell:()=>toast('2 new notifications (demo)'),calc:()=>{$('#sh').classList.add('on');calc()},cl:()=>$('#sh').classList.remove('on')};
+
+const TAB_NAMES={overview:'Overview',insight:'Insight',investments:'Investments',products:'Products',service:'Service'};
+function switchTab(tab){
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  $$('.tab-pane').forEach(p=>p.classList.toggle('on',p.id==='tab-'+tab));
+  $('#hdr-title').textContent=TAB_NAMES[tab]||'Overview';
+  $('#hdr-left').style.visibility=tab==='overview'?'visible':'hidden';
+}
+
 function calc(){const a=+$('#ca').value||0,y=+$('#cy').value,v=a/Math.pow(1.025,y);$('#cy2').textContent=$('#cy3').textContent=y;$('#cr').textContent=fm(v);$('#cl').textContent=fm(a-v)}
-document.addEventListener('click',e=>{const k=e.target.closest('[data-k]');if(k)return key(k.dataset.k);const t=e.target.closest('[data-a]');if(t&&A[t.dataset.a])A[t.dataset.a]()});
+function calcInvFull(){
+  const m=+$('#iv-m').value||100,y=+$('#iv-y').value||10,r=+$('#iv-s').value||0.052;
+  const dep=m*12*y,fv=m*((Math.pow(1+r/12,y*12)-1)/(r/12));
+  $('#iv-y2').textContent=y;$('#iv-dep2').textContent=fmInt(dep);$('#iv-tot').textContent=fmInt(fv);$('#iv-gain').textContent='+'+fmInt(fv-dep);
+}
+function calcMortgage(){
+  const inc=+$('#mg-inc').value||72000,partner=+$('#mg-p').value||0,max=(inc+partner)*4.65;
+  $('#mg-res').textContent=fmInt(max);$('#mg-mo').textContent=fm(max*0.0044);
+}
+
+const A={
+  hint:()=>toast('Demo PIN: 35046 (or tap the face icon)'),
+  cl:closeSheet,
+  bell:()=>openSheet(`<h3>Notifications</h3>
+    <div class="kv"><div><b>AllianzCare payment</b><div class="mu" style="font-size:13px">10 Nov · iDEAL | Wero</div></div><b>-1.452,00 €</b></div>
+    <div class="kv"><div><b>Loskutov Digital Solutions</b><div class="mu" style="font-size:13px">09 Nov · Incoming ZZP transfer</div></div><b style="color:var(--gn)">+1.577,80 €</b></div>
+    <div class="kv"><div><b>Annual statement 2026</b><div class="mu" style="font-size:13px">Available in Service → Annual statement</div></div><span class="mu">New</span></div>`),
+  switchAcc:()=>{STATE.accIdx=(STATE.accIdx+1)%STATE.accounts.length;syncAccountUI();toast('Switched to '+STATE.accounts[STATE.accIdx].short)},
+  filter:()=>openSheet(`<h3>Overview display</h3>
+    <div class="kv"><span>Show savings accounts</span><b>On</b></div>
+    <div class="kv"><span>Show Wallet Points</span><b>7 600 pts</b></div>
+    <div class="kv"><span>Currency format</span><b>EUR (€)</b></div>
+    <button class="btn-or" data-a="cl">Done</button>`),
+  transfer:()=>openSheet(`<h3>New Transfer</h3>
+    <div class="mu" style="font-size:13.5px">From: ${STATE.accounts[STATE.accIdx].iban}</div>
+    <input id="tr-to" placeholder="Recipient name or IBAN" value="V LOSKUTOVA">
+    <input id="tr-am" type="number" placeholder="Amount (€)" value="50.00">
+    <input id="tr-ds" placeholder="Description" value="Personal transfer">
+    <button class="btn-or" data-a="sendTr">Send instantly</button>`),
+  sendTr:()=>{
+    const am=Math.abs(+$('#tr-am').value||0);if(!am)return toast('Enter amount');
+    STATE.accounts[STATE.accIdx].bal=Math.max(0,STATE.accounts[STATE.accIdx].bal-am);
+    syncAccountUI();closeSheet();toast('Sent '+fm(am)+' to '+($('#tr-to').value||'recipient'));
+  },
+  request:()=>openSheet(`<h3>Payment Request (Tikkie)</h3><input type="number" value="24.50"><input value="Dinner & parking split"><button class="btn-or" data-a="copyReq">Create & copy payment link</button>`),
+  copyReq:()=>{closeSheet();toast('Payment link copied to clipboard')},
+  scanner:()=>openSheet(`<h3>QR &amp; Acceptgiro Scanner</h3><p class="mu">Point your camera at an iDEAL QR code or Dutch payment slip to pay directly from ${STATE.accounts[STATE.accIdx].iban}.</p><button class="btn-or" data-a="cl">Close scanner</button>`),
+  orders:()=>openSheet(`<h3>Scheduled Orders &amp; Direct Debits</h3>
+    <div class="kv"><div><b>Allianz Direct Vers.</b><div class="mu" style="font-size:13px">SEPA direct debit · Yearly</div></div><b>-64,38 €</b></div>
+    <div class="kv"><div><b>Fitness de Kloek</b><div class="mu" style="font-size:13px">Monthly membership</div></div><b>-54,45 €</b></div>
+    <div class="kv"><div><b>ING Go Package</b><div class="mu" style="font-size:13px">Monthly account fee</div></div><b>-4,00 €</b></div>`),
+  newAcc:()=>openSheet(`<h3>Open an extra account</h3><p class="mu">Open a Joint Account, Extra Orange Account or Business ZZP Account in 2 minutes.</p><button class="btn-or" data-a="cl">Explore options</button>`),
+  plan:()=>openSheet(`<h3>ING Go Package</h3>
+    <div class="kv"><span>Account holder</span><b>${STATE.accounts[STATE.accIdx].short}</b></div>
+    <div class="kv"><span>Monthly fee</span><b>4,00 € / month</b></div>
+    <div class="kv"><span>Included debit cards</span><b>1x Maestro / Debit Mastercard</b></div>
+    <div class="kv"><span>Worldwide ATM &amp; Apple Pay</span><b>Included</b></div>`),
+  calc:()=>{openSheet(`<h3 style="margin:0 0 6px">Inflation impact</h3><div class="mu" style="font-size:13.5px">Assumed inflation: 2,5% per year</div><input id="ca" type="number" value="10000" data-i="1"><div style="font-size:14px;margin-top:6px">Years: <b id="cy2">10</b></div><input id="cy" type="range" min="1" max="30" value="10" data-i="1"><p style="font-size:14.5px">In <b id="cy3">10</b> years, this money buys what <b id="cr" style="color:var(--ac)"></b> buys today.</p><div class="mu" style="font-size:13.5px">Value lost: <span id="cl"></span></div>`);calc()},
+  savings:()=>openSheet(`<h3>Orange Savings</h3><div class="kv"><span>Current balance</span><b>0,00 €</b></div><div class="kv"><span>Variable interest rate</span><b>1,50% p.a.</b></div><div class="kv"><span>Linked account</span><b>${STATE.accounts[0].iban}</b></div><button class="btn-or" data-a="cl">Transfer to savings</button>`),
+  cards:()=>openSheet(`<h3>Your Cards</h3>
+    <div class="kv"><div><b>Debit Card (Apple Pay)</b><div class="mu" style="font-size:13px">${STATE.accounts[0].iban}</div></div><b>${STATE.cardFrozen?'Frozen':'Active'}</b></div>
+    <div class="kv"><div><b>Credit Card Extra</b><div class="mu" style="font-size:13px">Hr I Loskutov · 5000 **** **** 0898</div></div><b>Active</b></div>
+    <button class="btn-or" data-a="toggleFreeze">${STATE.cardFrozen?'Unfreeze debit card':'Temporarily freeze debit card'}</button>`),
+  toggleFreeze:()=>{STATE.cardFrozen=!STATE.cardFrozen;closeSheet();toast(STATE.cardFrozen?'Debit card frozen':'Debit card active again')},
+  points:()=>openSheet(`<h3>Wallet Points</h3><p class="mu">You have <b>7 600 Points</b> available for discounts on electronics, travel, and dining vouchers in the ING Store.</p><button class="btn-or" data-a="cl">Browse vouchers</button>`),
+  joint:()=>openSheet(`<h3>Joint Account</h3><p class="mu">Share groceries, rent, and household bills with two debit cards and full Insight tracking.</p><button class="btn-or" data-a="cl">Request joint account</button>`),
+
+  /* Insight */
+  insPeriod:()=>{
+    STATE.periodIdx=(STATE.periodIdx+1)%STATE.periods.length;
+    const p=STATE.periods[STATE.periodIdx];
+    $('#ins-period').textContent=p.label;$('#ins-budget').textContent=p.budget;$('#ins-budget-note').textContent=p.note;
+    $('#ins-rec-in').textContent=p.recIn;$('#ins-rec-out').textContent=p.recOut;$('#ins-in').textContent=p.inAmt;
+    $('#ins-out').textContent=p.outAmt;$('#ins-now-bal').textContent=p.nowBal;toast('Period: '+p.label);
+  },
+  insCat:()=>openSheet(`<h3>Spending by Category</h3>
+    <div style="margin:10px 0"><b>Bills &amp; Insurance</b> <span style="float:right">-1.520,38 €</span><div class="cat-bar"><i style="width:82%"></i></div></div>
+    <div style="margin:10px 0"><b>Groceries (Albert Heijn, Jumbo)</b> <span style="float:right">-162,27 €</span><div class="cat-bar"><i style="width:24%"></i></div></div>
+    <div style="margin:10px 0"><b>Transport &amp; Fuel</b> <span style="float:right">-148,50 €</span><div class="cat-bar"><i style="width:21%"></i></div></div>
+    <div style="margin:10px 0"><b>Sport (Fitness de Kloek)</b> <span style="float:right">-54,45 €</span><div class="cat-bar"><i style="width:11%"></i></div></div>`),
+  insAhead:()=>openSheet(`<h3>Look Ahead (Next 30 Days)</h3><p class="mu">Expected upcoming recurring transactions on ${STATE.accounts[0].iban}:</p>
+    <div class="kv"><span>Fitness de Kloek</span><b>-54,45 €</b></div>
+    <div class="kv"><span>Account fee</span><b>-4,00 €</b></div>
+    <div class="kv"><span>Expected ZZP transfer</span><b style="color:var(--gn)">+1.577,80 €</b></div>`),
+  insSav:()=>openSheet(`<h3>Savings Activity</h3><p class="mu">No automatic Round Up transfers active yet. Enable Round Up to save spare change on every card payment.</p><button class="btn-or" data-a="cl">Got it</button>`),
+  insInfo:()=>openSheet(`<h3>About In &amp; Out</h3><p class="mu">In &amp; Out compares all money credited to your account against all outgoing payments, excluding internal transfers between your own ING accounts.</p>`),
+  insInOut:()=>A.insCat(),
+  enableBudgets:()=>{
+    $('#box-budgets').innerHTML=`<div style="font-weight:700;margin-bottom:8px">✓ Monthly Budgets Active</div>
+      <div style="margin:8px 0;font-size:14px">Groceries: <b>162 €</b> / 250 €<div class="cat-bar"><i style="width:65%"></i></div></div>
+      <div style="margin:8px 0;font-size:14px">Transport &amp; Parking: <b>148 €</b> / 200 €<div class="cat-bar"><i style="width:74%"></i></div></div>`;
+    toast('Budgets enabled');
+  },
+  enableTopExp:()=>{
+    $('#box-topexp').innerHTML=`<div style="font-weight:700;margin-bottom:8px">✓ Top Expenses Breakdown</div>
+      <div class="kv"><span>🛡️ AllianzCare &amp; Direct</span><b>-1.516,38 €</b></div>
+      <div class="kv"><span>🏛️ Gemeente / Belastingdienst</span><b>-1.378,95 €</b></div>
+      <div class="kv"><span>🛒 Jumbo &amp; Albert Heijn</span><b>-162,27 €</b></div>`;
+    toast('Insight categorisation turned on');
+  },
+  insRec:()=>openSheet(`<h3>Recurring Expenses</h3>
+    <div class="kv"><div><b>Allianz Direct Vers</b><div class="mu" style="font-size:13px">Yearly · DE90 7002 0270 0020 1290 28</div></div><b>-64,38 €</b></div>
+    <div class="kv"><div><b>Fitness de Kloek</b><div class="mu" style="font-size:13px">Monthly · NL56 DEUT 0265 1864 20</div></div><b>-54,45 €</b></div>
+    <div class="kv"><div><b>Account fee</b><div class="mu" style="font-size:13px">Monthly · ING Go</div></div><b>-4,00 €</b></div>`),
+  insProg:()=>openSheet(`<h3>Balance Progression</h3><p class="mu">Highest balance in period: <b>1.647,80 €</b><br>Current balance: <b>${$('#ins-now-bal').textContent}</b></p><a class="btn-or" href="./account.html" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">Open full transaction list</a>`),
+
+  /* Investments */
+  invExplore:()=>openSheet(`<h3>Explore 25.000+ Instruments</h3>
+    <input id="inst-q" placeholder="Filter stocks, ETFs, funds..." oninput="filterInst(this.value)">
+    <div id="inst-list">
+      <div class="kv inst-it"><div><b>ASML Holding N.V.</b><div class="mu" style="font-size:13px">Euronext Amsterdam · Stock</div></div><b>742,80 €</b></div>
+      <div class="kv inst-it"><div><b>VanEck AEX UCITS ETF</b><div class="mu" style="font-size:13px">Tracker · TER 0,30%</div></div><b>106,35 €</b></div>
+      <div class="kv inst-it"><div><b>ING Global Index Portfolio</b><div class="mu" style="font-size:13px">Mixed Fund · Neutral</div></div><b>48,92 €</b></div>
+      <div class="kv inst-it"><div><b>Shell plc</b><div class="mu" style="font-size:13px">Euronext Amsterdam · Stock</div></div><b>31,45 €</b></div>
+    </div>`),
+  invStart:()=>openSheet(`<h3>Start Investing</h3><p class="mu">Choose how you want to begin from as little as €10 per month:</p>
+    <div class="kv"><div><b>Easy Invest</b><div class="mu" style="font-size:13px">Managed global index funds</div></div><span style="color:var(--ac);font-weight:700">Popular</span></div>
+    <div class="kv"><div><b>Self Invest</b><div class="mu" style="font-size:13px">Pick your own stocks &amp; ETFs</div></div><span>0 € base fee</span></div>
+    <button class="btn-or" data-a="cl">Continue setup</button>`),
+  invPromo:()=>openSheet(`<h3>Get up to €200 cashback</h3><p class="mu">Open an Easy Invest account before 31 December 2026 and invest at least €50/month for 6 consecutive months to receive €50 to €200 cashback.</p><button class="btn-or" data-a="cl">Activate promotion</button>`),
+  invFullCalc:()=>{
+    openSheet(`<h3>Full Yield Calculator</h3>
+      <div style="font-size:13.5px" class="mu">Monthly deposit (€)</div><input id="iv-m" type="number" value="100" oninput="calcInvFull()">
+      <div style="font-size:13.5px" class="mu">Strategy</div>
+      <select id="iv-s" onchange="calcInvFull()"><option value="0.032">Defensive (3,2% avg/yr)</option><option value="0.052" selected>Neutral (5,2% avg/yr)</option><option value="0.071">Offensive (7,1% avg/yr)</option></select>
+      <div style="font-size:13.5px;margin-top:6px">Horizon: <b id="iv-y2">10</b> years</div><input id="iv-y" type="range" min="3" max="30" value="10" oninput="calcInvFull()">
+      <div class="kv"><span>Total deposit</span><b id="iv-dep2">12 000 €</b></div>
+      <div class="kv"><span>Expected return</span><b id="iv-gain" style="color:var(--gn)">+3 372 €</b></div>
+      <div class="kv"><span>Projected total</span><b id="iv-tot">15 372 €</b></div>`);
+    calcInvFull();
+  },
+  invArticles:()=>A.art1(),
+  art1:()=>openSheet(`<h3>How to start investing?</h3><p class="mu">Reading time: 5 min.</p><p>1. Keep an emergency buffer in your Orange Savings account.<br>2. Spread your risk globally using diversified index funds.<br>3. Invest monthly to smooth out market fluctuations over 10+ years.</p>`),
+  art2:()=>openSheet(`<h3>Which investment suits you best?</h3><p class="mu">Reading time: 4 min.</p><p><b>Easy Invest</b> is built for hands-off monthly investing. <b>Self Invest</b> gives full control over European and US stocks, trackers, and bonds.</p>`),
+  invProd:(el)=>openSheet(`<h3>${el.dataset.title||'ING Investments'}</h3><p class="mu">Start from €10 with transparent fees and 24/7 insight directly inside your ING Mobile app.</p><button class="btn-or" data-a="cl">Open product details</button>`),
+  invTour:(el)=>openSheet(`<h3>Interactive Tour: ${el.dataset.title}</h3><p class="mu">Step 1 of 3: Choose your risk profile and monthly contribution.<br>Step 2 of 3: Automatic diversification across global equities &amp; bonds.<br>Step 3 of 3: Track real-time returns and adjust anytime.</p><button class="btn-or" data-a="cl">Finish tour</button>`),
+  watchlist:()=>openSheet(`<h3>Your Watchlist</h3>${STATE.watchlist.map(w=>`<div class="kv"><b>☆ ${w}</b><span style="color:var(--gn)">Tracked</span></div>`).join('')}<button class="btn-or" data-a="invExplore">Add more instruments</button>`),
+  invCat:(el)=>openSheet(`<h3>Category: ${el.dataset.cat}</h3><p class="mu">Showing top traded ${el.dataset.cat.toLowerCase()} on Euronext Amsterdam and XETRA.</p><button class="btn-or" data-a="invExplore">Browse all ${el.dataset.cat}</button>`),
+  newsFilter:(el)=>{
+    const onlyWatch=el.dataset.type==='watch';
+    $('#news-latest').classList.toggle('on',!onlyWatch);$('#news-latest').textContent=(!onlyWatch?'✓ ':'')+'Latest';
+    $('#news-watch').classList.toggle('on',onlyWatch);$('#news-watch').textContent=(onlyWatch?'✓ ':'')+'Watchlist';
+    const items=onlyWatch?STATE.news.filter(n=>n.watch):STATE.news;
+    $('#news-list').innerHTML=items.map(n=>`<div class="ar" data-a="newsItem" data-idx="${STATE.news.indexOf(n)}"><div><b>${n.title}</b><div>${n.time}</div></div><span class="mu">›</span></div>`).join('');
+  },
+  newsItem:(el)=>{const n=STATE.news[+el.dataset.idx||0];openSheet(`<h3>${n.title}</h3><div class="mu" style="font-size:13px;margin-bottom:10px">${n.time} · ${n.tag}</div><p>${n.body}</p>`)},
+  invNewsAll:()=>A.newsItem({dataset:{idx:0}}),
+  mktDetail:(el)=>openSheet(`<h3>${el.dataset.mkt} Index</h3><p class="mu">Live delayed market feed from Euronext / STOXX. View constituent stocks and ETF trackers inside Explore.</p><button class="btn-or" data-a="invExplore">View trackers</button>`),
+  allMarkets:()=>openSheet(`<h3>Global Markets</h3>
+    <div class="kv"><span>🇳🇱 AEX</span><b>1 063,440 (-1,30%)</b></div>
+    <div class="kv"><span>🇺🇸 US 500</span><b>7 239,346 (-0,29%)</b></div>
+    <div class="kv"><span>🇪🇺 Europe 600</span><b>621,484 (-1,04%)</b></div>
+    <div class="kv"><span>🇩🇪 DAX 40</span><b>19 412,10 (+0,18%)</b></div>`),
+
+  /* Products */
+  mortgageCalc:()=>{
+    openSheet(`<h3>Maximum Mortgage Calculator</h3>
+      <div class="mu" style="font-size:13.5px">Gross annual income (€)</div><input id="mg-inc" type="number" value="72000" oninput="calcMortgage()">
+      <div class="mu" style="font-size:13.5px">Partner income (€, optional)</div><input id="mg-p" type="number" value="0" oninput="calcMortgage()">
+      <div class="kv"><span>Estimated max mortgage</span><b id="mg-res" style="color:var(--ac)">334 800 €</b></div>
+      <div class="kv"><span>Est. gross monthly payment</span><b id="mg-mo">1.473,12 €</b></div>`);
+    calcMortgage();
+  },
+  inviteFriend:()=>openSheet(`<h3>Invite a Friend</h3><p class="mu">Share your personal referral link. You receive <b>€50</b> and your friend receives up to <b>€200</b> when opening an ING account.</p><div class="box-card" style="text-align:center;font-weight:700">ing.nl/invite/IL-35046</div><button class="btn-or" data-a="copyReq">Copy invite link</button>`),
+  health2027:()=>openSheet(`<h3>Health Insurance 2027</h3><p class="mu">Compare Dutch basic &amp; supplementary policies for 2027. Your current insurance payments include <b>AllianzCare</b> and <b>Allianz Direct Vers.</b></p><button class="btn-or" data-a="cl">Compare 2027 packages</button>`),
+  prodCat:(el)=>openSheet(`<h3>${el.dataset.cat}</h3><p class="mu">Tailored ING ${el.dataset.cat.toLowerCase()} solutions for ${STATE.accounts[STATE.accIdx].short}.</p><button class="btn-or" data-a="cl">View options</button>`),
+  benefits:()=>openSheet(`<h3>Benefits Check</h3><p class="mu">Check in 3 minutes if you are eligible for Dutch government allowances (Zorgtoeslag, Huurtoeslag, Kindgebonden budget).</p><button class="btn-or" data-a="cl">Start check</button>`),
+  donations:()=>openSheet(`<h3>Easy Donations</h3><p class="mu">Support verified charities like Kinderpostzegels, Rode Kruis, or KWF with a single iDEAL tap.</p><button class="btn-or" data-a="cl">Choose charity</button>`),
+  digitalTog:()=>openSheet(`<h3>Digital Together</h3><p class="mu">Personal guidance on mobile banking, security, and recognizing phone spoofing.</p><button class="btn-or" data-a="cl">Book free session</button>`),
+  coach:()=>openSheet(`<h3>Insight Conversation</h3><p class="mu">Schedule a free 30-minute video call with an ING Financial Coach to review your monthly budget and savings goals.</p><button class="btn-or" data-a="cl">Pick date &amp; time</button>`),
+
+  /* Service */
+  addAcc:()=>openSheet(`<h3>Add Existing Account</h3><p class="mu">Link another ING account or external Dutch bank account via PSD2 open banking.</p><button class="btn-or" data-a="cl">Connect bank</button>`),
+  editProf:()=>openSheet(`<h3>Edit Profile Details</h3>
+    <div class="mu" style="font-size:13px">Residential address</div><input id="ed-addr" value="${STATE.accounts[0].addr}">
+    <div class="mu" style="font-size:13px">Phone number</div><input id="ed-ph" value="${STATE.accounts[0].phone}">
+    <button class="btn-or" data-a="saveProf">Save changes</button>`),
+  saveProf:()=>{STATE.accounts[0].addr=$('#ed-addr').value;STATE.accounts[0].phone=$('#ed-ph').value;closeSheet();toast('Contact details updated')},
+  logout:()=>{pin='';dots();go('lk');toast('Logged out safely')},
+  annualStmt:()=>openSheet(`<h3>Annual Statement (Jaaroverzicht)</h3>
+    <div class="kv"><span>Account holder</span><b>${STATE.accounts[0].short}</b></div>
+    <div class="kv"><span>IBAN</span><b>${STATE.accounts[0].iban}</b></div>
+    <div class="kv"><span>Opening balance 01-01-2026</span><b>1.412,30 €</b></div>
+    <div class="kv"><span>Current balance</span><b>${fm(STATE.accounts[0].bal)}</b></div>
+    <a class="btn-or" href="./account.html" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">Open statements in Current account</a>`),
+  dailyLimit:()=>openSheet(`<h3>Digital Daily Limit</h3>
+    <p class="mu">Maximum amount per day for app &amp; Mijn ING transfers:</p>
+    <div style="font-size:22px;font-weight:700;color:var(--ac)" id="dl-val">${fmInt(STATE.dailyLimit)}</div>
+    <input type="range" min="1000" max="50000" step="500" value="${STATE.dailyLimit}" oninput="STATE.dailyLimit=+this.value;$('#dl-val').textContent=fmInt(STATE.dailyLimit)">
+    <button class="btn-or" data-a="cl">Confirm limit</button>`),
+  idaChat:()=>openSheet(`<h3>Ida · ING Digital Assistant</h3>
+    <div class="chat-box" id="chat-log"><div class="msg-b">Hi Illia! I'm Ida. How can I help you with your account ${STATE.accounts[0].iban} today?</div></div>
+    <div style="display:flex;gap:8px"><input id="chat-in" placeholder="Ask a question..." style="margin:0"><button class="btn-or" style="width:auto;margin:0;padding:0 18px" data-a="sendChat">Send</button></div>`),
+  sendChat:()=>{
+    const inp=$('#chat-in'),txt=(inp?.value||'').trim();if(!txt)return;
+    const log=$('#chat-log');log.innerHTML+=`<div class="msg-u">${txt}</div>`;inp.value='';
+    setTimeout(()=>{log.innerHTML+=`<div class="msg-b">Got it! I've checked your account (${STATE.accounts[0].short}). An ING specialist is also online if you need personal assistance.</div>`;log.scrollTop=log.scrollHeight},350);
+  },
+  myDetails:()=>openSheet(`<h3>Your Details</h3>
+    <div class="kv"><span>Full name</span><b>${STATE.accounts[0].short}</b></div>
+    <div class="kv"><span>Address</span><b>${STATE.accounts[0].addr}</b></div>
+    <div class="kv"><span>Phone</span><b>${STATE.accounts[0].phone}</b></div>
+    <div class="kv"><span>Email</span><b>${STATE.accounts[0].email}</b></div>`),
+  myAccount:()=>openSheet(`<h3>Your Account</h3>
+    <div class="kv"><span>IBAN</span><b>${STATE.accounts[0].iban}</b></div>
+    <div class="kv"><span>BIC / SWIFT</span><b>INGBNL2A</b></div>
+    <div class="kv"><span>Balance</span><b>${fm(STATE.accounts[0].bal)}</b></div>
+    <a class="btn-or" href="./account.html" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">View transactions &amp; PDF statements</a>`),
+  accessConf:()=>openSheet(`<h3>Access &amp; Confirmation</h3>
+    <div class="kv"><span>Mobile PIN</span><b>5 digits (Active)</b></div>
+    <div class="kv"><span>Face ID</span><b>Enabled</b></div>
+    <div class="kv"><span>Registered device</span><b>iPhone (Trusted)</b></div>`),
+  appSettings:()=>openSheet(`<h3>Your App Settings</h3>
+    <div class="kv"><span>Appearance</span><button class="sm-pill" data-a="toggleTheme">Switch Dark / Light</button></div>
+    <div class="kv"><span>Language</span><b>English (NL)</b></div>
+    <div class="kv"><span>Balance preview</span><b>On</b></div>`),
+  toggleTheme:()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';toast('Theme: '+r.dataset.theme)},
+  privacySet:()=>openSheet(`<h3>Privacy Settings</h3><div class="kv"><span>Insight categorisation</span><b>Allowed</b></div><div class="kv"><span>Personalised offers</span><b>Active</b></div>`),
+  commSet:()=>openSheet(`<h3>Communication Settings</h3><div class="kv"><span>Mijn ING Digital Inbox</span><b>Enabled</b></div><div class="kv"><span>Push notifications</span><b>Enabled</b></div>`),
+  allOpts:()=>openSheet(`<h3>All Self-Service Options</h3><p class="mu">Manage IBAN name check, overdraft limits, foreign currency, power of attorney, and direct debit blocks.</p><button class="btn-or" data-a="cl">Close</button>`),
+  phones:()=>openSheet(`<h3>ING Phone Numbers</h3>
+    <div class="kv"><div><b>Customer Service (NL)</b><div class="mu" style="font-size:13px">Mon–Fri 08:00–21:00</div></div><b>020 22 888 88</b></div>
+    <div class="kv"><div><b>From Abroad</b><div class="mu" style="font-size:13px">24/7 Emergency &amp; Card block</div></div><b>+31 20 22 888 88</b></div>`),
+  chk:()=>openSheet(`<h3>Check the Call</h3><p class="mu">Got a call claiming to be ING? Enter the phone number or check if an ING advisor is currently on the line with your account.</p><input placeholder="+31 20 ..."><button class="btn-or" data-a="verifyCall">Verify caller</button>`),
+  verifyCall:()=>{closeSheet();toast('No active call from ING — hang up if asked for codes')},
+  fraud:()=>openSheet(`<h3>Reporting Fraud</h3><p class="mu">Suspect phishing or unauthorised transactions? Block your card immediately and contact the ING Fraud Desk 24/7.</p><button class="btn-or" data-a="toggleFreeze">Block debit card now</button>`),
+  complaint:()=>openSheet(`<h3>File &amp; Track Complaints</h3><textarea rows="3" placeholder="Describe your complaint or feedback..."></textarea><button class="btn-or" data-a="subComp">Submit complaint</button>`),
+  subComp:()=>{closeSheet();toast('Reference #ING-2026-8412 created')},
+  fb:(el)=>{el.parentElement.querySelectorAll('.face-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');toast('Thanks for your feedback!')}
+};
+
+window.filterInst=v=>{const q=v.toLowerCase();$$('.inst-it').forEach(el=>el.hidden=!!q&&!el.textContent.toLowerCase().includes(q))};
+
+document.addEventListener('click',e=>{
+  const k=e.target.closest('[data-k]');if(k)return key(k.dataset.k);
+  const tb=e.target.closest('[data-tab]');if(tb)return switchTab(tb.dataset.tab);
+  const ia=e.target.closest('[data-inv-amt]');
+  if(ia){
+    const m=+ia.dataset.invAmt;
+    $$('#inv-amounts .chip').forEach(c=>{const on=+c.dataset.invAmt===m;c.classList.toggle('on',on);c.textContent=(on?'✓ ':'')+c.dataset.invAmt+' €'});
+    $('#inv-dep').textContent=fmInt(m*120);$('#inv-neg').textContent='+'+fmInt(Math.round(m*4.18));
+    $('#inv-avg').textContent='+'+fmInt(Math.round(m*33.72));$('#inv-pos').textContent='+'+fmInt(Math.round(m*69.28));return;
+  }
+  const t=e.target.closest('[data-a]');if(t&&A[t.dataset.a])A[t.dataset.a](t);
+});
 document.addEventListener('input',e=>{if(e.target.dataset.i)calc()});
-$('#q').oninput=e=>{const v=e.target.value.toLowerCase();document.querySelectorAll('.sec').forEach(s=>s.hidden=!!v&&!s.textContent.toLowerCase().includes(v))};
+$('#q').oninput=e=>{const v=e.target.value.toLowerCase();$$('#sc .sec').forEach(s=>s.hidden=!!v&&!s.textContent.toLowerCase().includes(v))};
+$('#q-pr').oninput=e=>{const v=e.target.value.toLowerCase();$$('#tab-products .pr-item').forEach(s=>s.hidden=!!v&&!s.textContent.toLowerCase().includes(v))};
+$('#q-sr').oninput=e=>{const v=e.target.value.toLowerCase();$$('#tab-service .sr-item').forEach(s=>s.hidden=!!v&&!s.textContent.toLowerCase().includes(v))};
 $('#skl').innerHTML='<div class="sb" style="width:50%"></div>'.repeat(1)+Array.from({length:9},(_,i)=>`<div class="sb" style="width:${[90,60,80,45,95,70,55,85,65][i]}%"></div>`).join('');
 if(location.hash==='#overview')go('hm');else setTimeout(()=>go('lk'),1800);
 </script></body></html>
