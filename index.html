@@ -140,7 +140,7 @@ R=[[22,' Instapark via Tikkie Zakelijk','🅿️',-2.54,'Transport',{
     ref:'09/11/2026 20:09:03',             // тестовый референс
     description:'personal funds',     // текст описания
     tag:'ZZP income'                      // начальный тег
-}],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Faustinus Chukwuma Onuima UAB','💼',636,'Income'],[-1,'Tax Office','🏛️',-586,'Bills']];
+}],[9,'Account fee','🧾',-4,'Bills'],[5,'Mega Super','🛒',-21.32,'Groceries'],[2,'ATM','🏧',-20,'Cash'],[0,'Faustinus Chukwuma Onuima UAB','💼',636,'Income'],[-1,'Belastingdienst','🏛️',-586,'Bills']];
 let S,T,id=0;
 const hist=p=>{let h=[],x=p*.94;for(let i=0;i<30;i++){x*=1+(Math.random()-.46)*.02;h.push(+x.toFixed(2))}h[29]=p;return h};
 function init(){id=0;T=R.map(r=>({id:id++,d:new Date(2026,10,r[0]),n:r[1],i:r[2],a:r[3],c:r[4],note:r[5]?.description??'',tag:r[5]?.tag,meta:{...r[5]}}));
