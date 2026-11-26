@@ -242,28 +242,28 @@ const PDF_CONFIG = {
   layout: {
     titleSize:     0.0282,
     helpSize:      0.0165,
-    labelSize:     0.0150,
+    labelSize:     0.0142, // Подписи "Period", "Account number" и заголовки таблицы
     footerSize:    0.0142,
-    fontSize:      0.0176,
-    lineHeight:    0.0235,
-    maxChars:      42,     // Перенос длинных строк с учётом отступа колонки
+    fontSize:      0.0158, // Чуть уменьшенный основной шрифт, чтобы референс влезал в одну строку
+    lineHeight:    0.0205, // Более аккуратный межстрочный интервал
+    maxChars:      50,     // Лимит символов до переноса (хватает на полный Reference)
 
     headerTitle:   { rightX: 0.883, y: 0.941 },
     help1:         { rightX: 0.934, y: 0.919 },
     help2:         { rightX: 0.934, y: 0.902 },
 
-    address:       { x: 0.116, y: 0.840, stepY: 0.019 },
+    address:       { x: 0.116, y: 0.840, stepY: 0.0175 },
 
     periodLabel:   { rightX: 0.934, y: 0.858 },
     periodValue:   { rightX: 0.934, y: 0.842 },
     accountLabel:  { rightX: 0.934, y: 0.823 },
     accountValue:  { rightX: 0.934, y: 0.807 },
 
-    // Заголовки колонок таблицы (подняты ближе к оранжевой линии) и отступ после Date
+    // Заголовки колонок таблицы и первая строка транзакции
     tableHeaderY:  0.681,
     rowTopY:       0.654,
     dateX:         0.080,
-    descX:         0.195,
+    descX:         0.180,
     typeX:         0.618,
     amountRightX:  0.934,
 
@@ -271,7 +271,7 @@ const PDF_CONFIG = {
     tableLine: {
       startX:       0.081,
       endX:         0.938,
-      gapBelowText: 0.58,
+      gapBelowText: 0.50,
       thickness:    0.0012
     },
 
@@ -296,7 +296,6 @@ async function loadStatementFonts(pdfDoc) {
         _cachedPdfFontBytes = { regBuf, boldBuf };
       }
       pdfDoc.registerFontkit(fontkit);
-      // Отключаем лигатуры (liga: false), чтобы сочетание "fi" в Notification не давало визуальный пробел
       const fontRegular = await pdfDoc.embedFont(_cachedPdfFontBytes.regBuf,  { features: { liga: false } });
       const fontBold    = await pdfDoc.embedFont(_cachedPdfFontBytes.boldBuf, { features: { liga: false } });
       return { fontRegular, fontBold };
