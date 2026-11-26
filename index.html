@@ -207,6 +207,7 @@ $('#scr').addEventListener('scroll',updateHeader,{passive:true});
 /* ---------- PDF statement generator ---------- */
 const PDF_CONFIG = {
   templateUrl: './statement_template.pdf',
+  // Шрифты, максимально близкие к оригинальному стилю ING
   fonts: {
     regularUrl: 'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-400-normal.ttf',
     boldUrl:    'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-700-normal.ttf'
@@ -239,33 +240,30 @@ const PDF_CONFIG = {
   },
   // Координаты и размеры в долях от ширины (W) и высоты (H) листа A4
   layout: {
-    titleSize:     0.0282, // Широкий заголовок "Statement current account" (как на скрине 1)
-    helpSize:      0.0165, // Строки "At ING.nl..." (как на скрине 1)
-    labelSize:     0.0150, // Подписи "Period", "Account number" и заголовки таблицы
-    footerSize:    0.0142, // Юридический текст внизу под оранжевой линией
-    fontSize:      0.0176, // Размер шрифта адреса (скрин 2) и данных транзакции
-    lineHeight:    0.0235, // Межстрочный интервал в Description
-    maxChars:      44,     // Перенос длинных строк до колонки Type
+    titleSize:     0.0282,
+    helpSize:      0.0165,
+    labelSize:     0.0150,
+    footerSize:    0.0142,
+    fontSize:      0.0176,
+    lineHeight:    0.0235,
+    maxChars:      42,     // Перенос длинных строк с учётом отступа колонки
 
-    // Верхний правый заголовок (слева от иконки кошелька)
     headerTitle:   { rightX: 0.883, y: 0.941 },
     help1:         { rightX: 0.934, y: 0.919 },
     help2:         { rightX: 0.934, y: 0.902 },
 
-    // Адрес владельца счёта слева (выровнен по высоте правого блока, как на скрине 2)
     address:       { x: 0.116, y: 0.840, stepY: 0.019 },
 
-    // Правый блок: Period и Account number
     periodLabel:   { rightX: 0.934, y: 0.858 },
     periodValue:   { rightX: 0.934, y: 0.842 },
     accountLabel:  { rightX: 0.934, y: 0.823 },
     accountValue:  { rightX: 0.934, y: 0.807 },
 
-    // Заголовки колонок таблицы и первая строка транзакции
-    tableHeaderY:  0.674,
-    rowTopY:       0.646,
+    // Заголовки колонок таблицы (подняты ближе к оранжевой линии) и отступ после Date
+    tableHeaderY:  0.681,
+    rowTopY:       0.654,
     dateX:         0.080,
-    descX:         0.175,
+    descX:         0.195,
     typeX:         0.618,
     amountRightX:  0.934,
 
@@ -298,8 +296,9 @@ async function loadStatementFonts(pdfDoc) {
         _cachedPdfFontBytes = { regBuf, boldBuf };
       }
       pdfDoc.registerFontkit(fontkit);
-      const fontRegular = await pdfDoc.embedFont(_cachedPdfFontBytes.regBuf);
-      const fontBold    = await pdfDoc.embedFont(_cachedPdfFontBytes.boldBuf);
+      // Отключаем лигатуры (liga: false), чтобы сочетание "fi" в Notification не давало визуальный пробел
+      const fontRegular = await pdfDoc.embedFont(_cachedPdfFontBytes.regBuf,  { features: { liga: false } });
+      const fontBold    = await pdfDoc.embedFont(_cachedPdfFontBytes.boldBuf, { features: { liga: false } });
       return { fontRegular, fontBold };
     } catch (e) {
       // Если шрифт недоступен, плавно используем встроенный Helvetica
@@ -416,13 +415,13 @@ async function generateStatementPdf(t) {
     const ST = PDF_CONFIG.staticText;
     const L  = PDF_CONFIG.layout;
 
-    // Собираем строки блока Name / Description / Notification
+    // Порядок строк в Name / Description / Notification: Name -> Description -> IBAN -> Reference -> Value date
     const descLines = [];
     const titleName = (counterparty[0] || t.n || '').trim();
     if (titleName)       descLines.push(...wrapPdfLines(titleName, L.maxChars));
+    if (rawDesc)         descLines.push(...wrapPdfLines(`Description: ${rawDesc}`, L.maxChars));
     if (counterparty[1]) descLines.push(...wrapPdfLines(`IBAN: ${counterparty[1]}`, L.maxChars));
     if (m.ref)           descLines.push(...wrapPdfLines(`Reference: ${m.ref}`, L.maxChars));
-    if (rawDesc)         descLines.push(...wrapPdfLines(`Description: ${rawDesc}`, L.maxChars));
     if (procDateStr)     descLines.push(...wrapPdfLines(`Value date: ${procDateStr}`, L.maxChars));
 
     const existingPdfBytes = await fetch(PDF_CONFIG.templateUrl).then(res => {
